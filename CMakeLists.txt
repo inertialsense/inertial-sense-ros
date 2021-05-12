@@ -52,7 +52,7 @@ catkin_package(
 
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-  lib/InertialSenseSDK/src #This line of CMakeList.txt stays in .external file to reference submodule
+  lib/inertial-sense-sdk/src #This line of CMakeList.txt stays in .external file to reference submodule
 )
 
 add_subdirectory(lib/inertial-sense-sdk)

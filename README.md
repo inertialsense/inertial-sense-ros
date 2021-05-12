@@ -5,13 +5,13 @@ A ROS wrapper for the InertialSense uINS3 RTK-GPS-INS and Dual GPS (GPS Compassi
 
 ## NOTICE:
 
-To use this node, the uINS should be updated with the latest firmware found on the Inertial Sense [release page](https://github.com/inertialsense/InertialSenseSDK/releases). Download the appropriate `.hex` file and use the `firmware_update` ROS service to update the firmware
+To use this node, the uINS should be updated with the latest firmware found on the Inertial Sense [release page](https://github.com/inertialsense/inertial-sense-sdk/releases). Download the appropriate `.hex` file and use the `firmware_update` ROS service to update the firmware
 ``` 
 rosservice call /firmware_update ~/Download/IS_uINS-3_<...>.hex
 ```
 
 ## Installation
-This ROS package, uses the InertialSenseSDK as a submodule. Clone this package into the catkin workspace `src` folder, then pull the submodule.
+This ROS package, uses the inertial-sense-sdk as a submodule. Clone this package into the catkin workspace `src` folder, then pull the submodule.
 
 ``` bash
 mkdir -p catkin_ws/src

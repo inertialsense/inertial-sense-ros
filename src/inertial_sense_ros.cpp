@@ -544,7 +544,7 @@ void InertialSenseROS::GPS_vel_callback(const gps_vel_t * const msg)
 
 void InertialSenseROS::publishGPS()
 {
-  if ((gps_velEcef.header.stamp - gps_msg.header.stamp).toSec() < 2e-3)
+  if (abs((gps_velEcef.header.stamp - gps_msg.header.stamp).toSec()) < 2e-3)
 	{
 		gps_msg.velEcef = gps_velEcef.vector;
 		GPS_.pub.publish(gps_msg);

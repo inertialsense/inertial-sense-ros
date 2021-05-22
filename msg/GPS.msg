@@ -11,6 +11,7 @@ uint32 GPS_STATUS_FIX_TYPE_RESERVED2            = 1792
 uint32 GPS_STATUS_FIX_STATUS_FIX_OK             = 65536
 
 Header header
+uint32 week                             # GPS number of weeks since January 6th, 1980 
 int8 num_sat 							# Number of satellites used in solution
 uint32 fix_type 						# Fix type, one of STATUS_FIX_TYPE flags
 int32 cno 								# mean carrier noise ratio (dBHz)

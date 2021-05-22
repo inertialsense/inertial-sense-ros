@@ -512,6 +512,7 @@ void InertialSenseROS::GPS_pos_callback(const gps_pos_t * const msg)
   if (GPS_.enabled && msg->status&GPS_STATUS_FIX_MASK)
   {
     gps_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs/1e3);
+    gps_msg.week = msg->week;
     gps_msg.fix_type = msg->status & GPS_STATUS_FIX_MASK;
     gps_msg.header.frame_id =frame_id_;
     gps_msg.num_sat = (uint8_t)(msg->status & GPS_STATUS_NUM_SATS_USED_MASK);
@@ -1058,8 +1059,9 @@ ros::Time InertialSenseROS::ros_time_from_start_time(const double time)
   //  If we have a GPS fix, then use it to set timestamp
   if (GPS_towOffset_ > 0.001)
   {
-    uint64_t sec = UNIX_TO_GPS_OFFSET + floor(time + GPS_towOffset_) + GPS_week_*7*24*3600;
-    uint64_t nsec = (time + GPS_towOffset_ - floor(time + GPS_towOffset_))*1e9;
+    double timeOfWeek = time + GPS_towOffset_;
+    uint64_t sec = (uint64_t)(UNIX_TO_GPS_OFFSET + floor(timeOfWeek) + GPS_week_*7*24*3600);
+    uint64_t nsec = (uint64_t)((timeOfWeek - floor(timeOfWeek))*1.0e9);
     rostime = ros::Time(sec, nsec);
   }
   else

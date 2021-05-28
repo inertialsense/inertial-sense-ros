@@ -261,7 +261,7 @@ void InertialSenseROS::configure_rtk()
     RTK_state_ = RTK_ROVER;
     RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_F9P : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
 
-    if (IS_.OpenServerConnection(RTK_connection))
+    if (IS_.OpenConnectionToServer(RTK_connection))
       ROS_INFO_STREAM("Successfully connected to " << RTK_connection << " RTK server");
     else
       ROS_ERROR_STREAM("Failed to connect to base server at " << RTK_connection);

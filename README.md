@@ -123,8 +123,8 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
   - If operating as base, attempts to create a TCP port on this IP for base corrections, if rover, connects to this IP for corrections.
 * `~RTK_server_port` (int, default: 7777)
   - If operating as base, creates a TCP connection at this port for base corrections, if rover, connects to this port for corrections.
-* `~RTK_correction_type` (string, default: UBLOX)
-  - If operating with limited bandwidth, choose RTCM3 for a lower bandwidth, but less accurate base corrections,  rover and base must match
+* `~RTK_correction_protocol` (string, default: RTCM3)
+  - Options are RTCM3 and UBLOX (for M8 receiver).  Rover and base must match.
 
 **Sensor Configuration**
 * `~INS_rpy_radians` (vector(3), default: {0, 0, 0})

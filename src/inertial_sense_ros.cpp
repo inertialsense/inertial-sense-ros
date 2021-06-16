@@ -245,7 +245,7 @@ void InertialSenseROS::configure_rtk()
     RTK_base = false;
     ROS_INFO("InertialSense: Configured as RTK Rover with radio enabled");
     RTK_state_ = RTK_ROVER;
-    RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_F9P : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
+    RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
 
     SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback,1);
     SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback,1);
@@ -259,9 +259,9 @@ void InertialSenseROS::configure_rtk()
     std::string RTK_connection =  RTK_correction_type + ":" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
     ROS_INFO("InertialSense: Configured as RTK Rover");
     RTK_state_ = RTK_ROVER;
-    RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_F9P : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
+    RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
 
-    if (IS_.OpenServerConnection(RTK_connection))
+    if (IS_.OpenConnectionToServer(RTK_connection))
       ROS_INFO_STREAM("Successfully connected to " << RTK_connection << " RTK server");
     else
       ROS_ERROR_STREAM("Failed to connect to base server at " << RTK_connection);

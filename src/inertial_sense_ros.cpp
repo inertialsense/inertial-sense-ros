@@ -512,8 +512,7 @@ void InertialSenseROS::GPS_pos_callback(const gps_pos_t * const msg)
   GPS_towOffset_ = msg->towOffset;
   if (GPS_.enabled && msg->status&GPS_STATUS_FIX_MASK)
   {
-    gps_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs/1e3);
-    gps_msg.week = msg->week;
+    gps_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs/1.0e3);
     gps_msg.fix_type = msg->status & GPS_STATUS_FIX_MASK;
     gps_msg.header.frame_id =frame_id_;
     gps_msg.num_sat = (uint8_t)(msg->status & GPS_STATUS_NUM_SATS_USED_MASK);
@@ -534,9 +533,9 @@ void InertialSenseROS::GPS_pos_callback(const gps_pos_t * const msg)
 
 void InertialSenseROS::GPS_vel_callback(const gps_vel_t * const msg)
 {
-	if (GPS_.enabled && GPS_towOffset_ > 0.001)
+	if (GPS_.enabled && abs(GPS_towOffset_) > 0.001)
 	{
-		gps_velEcef.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs/1e3);
+		gps_velEcef.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs/1.0e3);
 		gps_velEcef.vector.x = msg->vel[0];
 		gps_velEcef.vector.y = msg->vel[1];
 		gps_velEcef.vector.z = msg->vel[2];
@@ -564,10 +563,10 @@ void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t * const ms
   if (strobe_pub_.getTopic().empty())
     strobe_pub_ = nh_.advertise<std_msgs::Header>("strobe_time", 1);
   
-  if (GPS_towOffset_ > 0.001)
+  if (abs(GPS_towOffset_) > 0.001)
   {
     std_msgs::Header strobe_msg;
-    strobe_msg.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs * 1e-3);
+    strobe_msg.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs * 1.0e-3);
     strobe_pub_.publish(strobe_msg);
   }
 }
@@ -575,12 +574,12 @@ void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t * const ms
 
 void InertialSenseROS::GPS_info_callback(const gps_sat_t* const msg)
 {
-  if(GPS_towOffset_ < 0.001)
+  if(abs(GPS_towOffset_) < 0.001)
   { // Wait for valid msg->timeOfWeekMs
     return;
   }
 
-  gps_info_msg.header.stamp =ros_time_from_tow(msg->timeOfWeekMs/1e3);
+  gps_info_msg.header.stamp =ros_time_from_tow(msg->timeOfWeekMs/1.0e3);
   gps_info_msg.header.frame_id = frame_id_;
   gps_info_msg.num_sats = msg->numSats;
   for (int i = 0; i < 50; i++)
@@ -635,7 +634,7 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t * const msg
 
 void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t* const msg)
 {
-  if (RTK_.enabled && GPS_towOffset_ > 0.001)
+  if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
   {
     inertial_sense_ros::RTKInfo rtk_info;
     rtk_info.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs/1000.0);
@@ -660,7 +659,7 @@ void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t* const msg)
 
 void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t* const msg)
 {
-  if (RTK_.enabled && GPS_towOffset_ > 0.001)
+  if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
   {
     inertial_sense_ros::RTKRel rtk_rel;
     rtk_rel.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs/1000.0);
@@ -1028,7 +1027,7 @@ ros::Time InertialSenseROS::ros_time_from_week_and_tow(const uint32_t week, cons
 {
   ros::Time rostime(0, 0);
   //  If we have a GPS fix, then use it to set timestamp
-  if (GPS_towOffset_ > 0.001)
+  if (abs(GPS_towOffset_) > 0.001)
   {
     uint64_t sec = UNIX_TO_GPS_OFFSET + floor(timeOfWeek) + week*7*24*3600;
     uint64_t nsec = (timeOfWeek - floor(timeOfWeek))*1e9;
@@ -1058,7 +1057,7 @@ ros::Time InertialSenseROS::ros_time_from_start_time(const double time)
   ros::Time rostime(0, 0);
   
   //  If we have a GPS fix, then use it to set timestamp
-  if (GPS_towOffset_ > 0.001)
+  if (abs(GPS_towOffset_) > 0.001)
   {
     double timeOfWeek = time + GPS_towOffset_;
     uint64_t sec = (uint64_t)(UNIX_TO_GPS_OFFSET + floor(timeOfWeek) + GPS_week_*7*24*3600);

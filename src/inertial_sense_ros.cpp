@@ -217,12 +217,11 @@ void InertialSenseROS::configure_rtk()
   nh_private_.param<bool>("RTK_rover_radio_enable", RTK_rover_radio_enable, false);
   nh_private_.param<bool>("RTK_base", RTK_base, false);
   nh_private_.param<bool>("dual_GNSS", dual_GNSS, false);
-  nh_private_.param<bool>("dual_GNSS", dual_GNSS, false);
-  std::string RTK_server_IP, RTK_correction_type;
+  std::string RTK_server_IP, RTK_correction_protocol;
   int RTK_server_port;
   nh_private_.param<std::string>("RTK_server_IP", RTK_server_IP, "127.0.0.1");
   nh_private_.param<int>("RTK_server_port", RTK_server_port, 7777);
-  nh_private_.param<std::string>("RTK_correction_type", RTK_correction_type, "UBLOX");
+  nh_private_.param<std::string>("RTK_correction_protocol", RTK_correction_protocol, "RTCM3");
   ROS_ERROR_COND(RTK_rover && RTK_base, "unable to configure uINS to be both RTK rover and base - default to rover");
   ROS_ERROR_COND(RTK_rover && dual_GNSS, "unable to configure uINS to be both RTK rover as dual GNSS - default to dual GNSS");
 
@@ -256,7 +255,8 @@ void InertialSenseROS::configure_rtk()
   else if (RTK_rover)
   {
     RTK_base = false;
-    std::string RTK_connection =  RTK_correction_type + ":" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
+    // [type]:[protocol]:[ip/url]:[port]:[mountpoint]:[username]:[password]
+    std::string RTK_connection =  "TCP:" + RTK_correction_protocol + ":" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
     ROS_INFO("InertialSense: Configured as RTK Rover");
     RTK_state_ = RTK_ROVER;
     RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
@@ -274,7 +274,8 @@ void InertialSenseROS::configure_rtk()
   }
   else if (RTK_base)
   {
-    std::string RTK_connection =  RTK_server_IP + ":" + std::to_string(RTK_server_port);
+    // [type]:[ip/url]:[port]
+    std::string RTK_connection = "TCP:" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
     RTK_.enabled = true;
     ROS_INFO("InertialSense: Configured as RTK Base");
     RTK_state_ = RTK_BASE;
@@ -544,7 +545,7 @@ void InertialSenseROS::GPS_vel_callback(const gps_vel_t * const msg)
 
 void InertialSenseROS::publishGPS()
 {
-  if ((gps_velEcef.header.stamp - gps_msg.header.stamp).toSec() < 2e-3)
+  if (abs((gps_velEcef.header.stamp - gps_msg.header.stamp).toSec()) < 2e-3)
 	{
 		gps_msg.velEcef = gps_velEcef.vector;
 		GPS_.pub.publish(gps_msg);
@@ -732,7 +733,7 @@ void InertialSenseROS::GPS_obs_bundle_timer_callback(const ros::TimerEvent &e)
     if (obs_Vec_.obs.size() == 0)
         return;
 
-    if ((ros::Time::now() - last_obs_time_).toSec() > 1e-2)
+    if (abs((ros::Time::now() - last_obs_time_).toSec()) > 1e-2)
     {
         obs_Vec_.header.stamp = ros_time_from_gtime(obs_Vec_.obs[0].time.time, obs_Vec_.obs[0].time.sec);
         obs_Vec_.time = obs_Vec_.obs[0].time;
@@ -1058,8 +1059,9 @@ ros::Time InertialSenseROS::ros_time_from_start_time(const double time)
   //  If we have a GPS fix, then use it to set timestamp
   if (abs(GPS_towOffset_) > 0.001)
   {
-    uint64_t sec = UNIX_TO_GPS_OFFSET + floor(time + GPS_towOffset_) + GPS_week_*7*24*3600;
-    uint64_t nsec = (time + GPS_towOffset_ - floor(time + GPS_towOffset_))*1e9;
+    double timeOfWeek = time + GPS_towOffset_;
+    uint64_t sec = (uint64_t)(UNIX_TO_GPS_OFFSET + floor(timeOfWeek) + GPS_week_*7*24*3600);
+    uint64_t nsec = (uint64_t)((timeOfWeek - floor(timeOfWeek))*1.0e9);
     rostime = ros::Time(sec, nsec);
   }
   else

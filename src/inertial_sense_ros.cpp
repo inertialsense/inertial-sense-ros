@@ -513,6 +513,7 @@ void InertialSenseROS::GPS_pos_callback(const gps_pos_t * const msg)
   if (GPS_.enabled && msg->status&GPS_STATUS_FIX_MASK)
   {
     gps_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs/1.0e3);
+    gps_msg.week = msg->week;
     gps_msg.fix_type = msg->status & GPS_STATUS_FIX_MASK;
     gps_msg.header.frame_id =frame_id_;
     gps_msg.num_sat = (uint8_t)(msg->status & GPS_STATUS_NUM_SATS_USED_MASK);
@@ -545,7 +546,8 @@ void InertialSenseROS::GPS_vel_callback(const gps_vel_t * const msg)
 
 void InertialSenseROS::publishGPS()
 {
-  if (abs((gps_velEcef.header.stamp - gps_msg.header.stamp).toSec()) < 2e-3)
+  double dt = (gps_velEcef.header.stamp - gps_msg.header.stamp).toSec();
+  if (abs(dt) < 2.0e-3)
 	{
 		gps_msg.velEcef = gps_velEcef.vector;
 		GPS_.pub.publish(gps_msg);

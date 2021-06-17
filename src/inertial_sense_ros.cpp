@@ -568,7 +568,7 @@ void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t * const ms
   if (abs(GPS_towOffset_) > 0.001)
   {
     std_msgs::Header strobe_msg;
-    strobe_msg.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs * 1e-3);
+    strobe_msg.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs * 1.0e-3);
     strobe_pub_.publish(strobe_msg);
   }
 }
@@ -581,7 +581,7 @@ void InertialSenseROS::GPS_info_callback(const gps_sat_t* const msg)
     return;
   }
 
-  gps_info_msg.header.stamp =ros_time_from_tow(msg->timeOfWeekMs/1e3);
+  gps_info_msg.header.stamp =ros_time_from_tow(msg->timeOfWeekMs/1.0e3);
   gps_info_msg.header.frame_id = frame_id_;
   gps_info_msg.num_sats = msg->numSats;
   for (int i = 0; i < 50; i++)

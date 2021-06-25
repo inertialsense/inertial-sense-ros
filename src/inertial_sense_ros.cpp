@@ -223,7 +223,7 @@ void InertialSenseROS::configure_rtk()
   nh_private_.param<std::string>("RTK_correction_protocol", RTK_correction_protocol, "RTCM3");
   nh_private_.param<std::string>("RTK_server_IP", RTK_server_IP, "127.0.0.1");
   nh_private_.param<int>("RTK_server_port", RTK_server_port, 7777);
-  nh_private_.param<std::string>("RTK_server_mount", RTK_server_mount, "127.0.0.1");
+  nh_private_.param<std::string>("RTK_server_mount", RTK_server_mount, "");
   nh_private_.param<std::string>("RTK_server_username", RTK_server_username, "");
   nh_private_.param<std::string>("RTK_server_password", RTK_server_password, "");
 

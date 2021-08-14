@@ -139,7 +139,7 @@ void InertialSenseROS::start_log()
   std::string filename = getenv("HOME");
   filename += "/Documents/Inertial_Sense/Logs/" + cISLogger::CreateCurrentTimestamp();
   ROS_INFO_STREAM("Creating log in " << filename << " folder");
-  IS_.SetLoggerEnabled(true, filename, cISLogger::LOGTYPE_DAT, RMC_PRESET_PPD_ROBOT);
+  IS_.SetLoggerEnabled(true, filename, cISLogger::LOGTYPE_DAT, RMC_PRESET_PPD_GROUND_VEHICLE);
 }
 
 void InertialSenseROS::configure_ascii_output()

@@ -69,6 +69,9 @@ public:
   void set_navigation_dt_ms();
   void configure_parameters();
   void configure_rtk();
+  void connect_rtk_client(const std::string& RTK_correction_protocol, const std::string& RTK_server_IP, const int RTK_server_port);
+  void start_rtk_server(const std::string& RTK_server_IP, const int RTK_server_port);
+
   void configure_data_streams();
   void configure_ascii_output();
   void start_log();

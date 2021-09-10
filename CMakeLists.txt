@@ -66,3 +66,7 @@ add_dependencies(inertial_sense_ros inertial_sense_ros_generate_messages_cpp)
 
 add_executable(inertial_sense_node src/inertial_sense_node.cpp)
 target_link_libraries(inertial_sense_node inertial_sense_ros ${catkin_LIBRARIES})
+
+# catkin_add_gtest(test_client_reconnect test/test_client_reconnect.cpp)
+# target_link_libraries(test_client_reconnect ${PROJECT_NAME})
+

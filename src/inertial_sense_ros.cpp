@@ -106,7 +106,7 @@ void InertialSenseROS::configure_data_streams()
   {
     mag_.pub = nh_.advertise<sensor_msgs::MagneticField>("mag", 1);
     //    mag_.pub2 = nh_.advertise<sensor_msgs::MagneticField>("mag2", 1);
-    SET_CALLBACK(DID_MAGNETOMETER_1, magnetometer_t, mag_callback, 1);
+    SET_CALLBACK(DID_MAGNETOMETER, magnetometer_t, mag_callback, 1);
   }
 
   // Set up the barometer ROS stream
@@ -209,6 +209,75 @@ void InertialSenseROS::configure_parameters()
   set_flash_config<int>("ser1_baud_rate", offsetof(nvm_flash_cfg_t, ser1BaudRate), 921600);
 }
 
+void InertialSenseROS::connect_rtk_client(const std::string& RTK_correction_protocol, const std::string& RTK_server_IP, const int RTK_server_port)
+{
+  std::string RTK_server_mount;
+  std::string RTK_server_username;
+  std::string RTK_server_password;
+
+  int RTK_connection_attempt_limit;
+  int RTK_connection_attempt_backoff;
+
+  nh_private_.param<std::string>("RTK_server_mount", RTK_server_mount, "");
+  nh_private_.param<std::string>("RTK_server_username", RTK_server_username, "");
+  nh_private_.param<std::string>("RTK_server_password", RTK_server_password, "");
+
+  nh_private_.param<int>("RTK_connection_attempt_limit", RTK_connection_attempt_limit, 1);
+  nh_private_.param<int>("RTK_connection_attempt_backoff", RTK_connection_attempt_backoff, 2);
+
+  // [type]:[protocol]:[ip/url]:[port]:[mountpoint]:[username]:[password]
+  std::string RTK_connection =  "TCP:" + RTK_correction_protocol + ":" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
+  if (!RTK_server_mount.empty() && !RTK_server_username.empty())
+  { // NTRIP options
+    RTK_connection += ":" + RTK_server_mount + ":" + RTK_server_username + ":" + RTK_server_password;
+  }
+
+  int RTK_connection_attempt_count = 0;
+  while (RTK_connection_attempt_count < RTK_connection_attempt_limit)
+  {
+    ++RTK_connection_attempt_count;
+
+    bool connected = IS_.OpenConnectionToServer(RTK_connection);
+
+    if (connected)
+    {
+      ROS_INFO_STREAM("Successfully connected to " << RTK_connection << " RTK server");
+      break;
+    }
+    else
+    {
+      ROS_ERROR_STREAM("Failed to connect to base server at " << RTK_connection);
+
+      if (RTK_connection_attempt_count >= RTK_connection_attempt_limit)
+      {
+        ROS_ERROR_STREAM("Giving up after " << RTK_connection_attempt_count << " failed attempts");
+      }
+      else
+      {
+        int sleep_duration = RTK_connection_attempt_count * RTK_connection_attempt_backoff;
+        ROS_WARN_STREAM("Retrying connection in " << sleep_duration << " seconds");
+        ros::Duration(sleep_duration).sleep();
+      }
+    }
+  }
+}
+
+void InertialSenseROS::start_rtk_server(const std::string& RTK_server_IP, const int RTK_server_port)
+{
+    // [type]:[ip/url]:[port]
+    std::string RTK_connection = "TCP:" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
+
+    if (IS_.CreateHost(RTK_connection))
+    {
+      ROS_INFO_STREAM("Successfully created " << RTK_connection << " as RTK server");
+      initialized_ = true;
+      return;
+    }
+    else
+      ROS_ERROR_STREAM("Failed to create base server at " << RTK_connection);
+
+}
+
 void InertialSenseROS::configure_rtk()
 {
   bool RTK_rover, RTK_rover_radio_enable, RTK_base, dual_GNSS;
@@ -218,14 +287,13 @@ void InertialSenseROS::configure_rtk()
   nh_private_.param<bool>("RTK_rover_radio_enable", RTK_rover_radio_enable, false);
   nh_private_.param<bool>("RTK_base", RTK_base, false);
   nh_private_.param<bool>("dual_GNSS", dual_GNSS, false);
-  std::string RTK_server_IP, RTK_correction_protocol, RTK_server_mount, RTK_server_username, RTK_server_password;
+
+  std::string RTK_correction_protocol;
+  std::string RTK_server_IP;
   int RTK_server_port;
   nh_private_.param<std::string>("RTK_correction_protocol", RTK_correction_protocol, "RTCM3");
   nh_private_.param<std::string>("RTK_server_IP", RTK_server_IP, "127.0.0.1");
   nh_private_.param<int>("RTK_server_port", RTK_server_port, 7777);
-  nh_private_.param<std::string>("RTK_server_mount", RTK_server_mount, "");
-  nh_private_.param<std::string>("RTK_server_username", RTK_server_username, "");
-  nh_private_.param<std::string>("RTK_server_password", RTK_server_password, "");
 
   ROS_ERROR_COND(RTK_rover && RTK_base, "unable to configure uINS to be both RTK rover and base - default to rover");
   ROS_ERROR_COND(RTK_rover && dual_GNSS, "unable to configure uINS to be both RTK rover as dual GNSS - default to dual GNSS");
@@ -260,21 +328,12 @@ void InertialSenseROS::configure_rtk()
   else if (RTK_rover)
   {
     RTK_base = false;
-    // [type]:[protocol]:[ip/url]:[port]:[mountpoint]:[username]:[password]
-    std::string RTK_connection =  "TCP:" + RTK_correction_protocol + ":" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
-    if (!RTK_server_mount.empty() && !RTK_server_username.empty())
-    { // NTRIP options
-      RTK_connection += ":" + RTK_server_mount + ":" + RTK_server_username + ":" + RTK_server_password; 
-    }
 
     ROS_INFO("InertialSense: Configured as RTK Rover");
     RTK_state_ = RTK_ROVER;
     RTKCfgBits |= (gps_type=="F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
 
-    if (IS_.OpenConnectionToServer(RTK_connection))
-      ROS_INFO_STREAM("Successfully connected to " << RTK_connection << " RTK server");
-    else
-      ROS_ERROR_STREAM("Failed to connect to base server at " << RTK_connection);
+    connect_rtk_client(RTK_correction_protocol, RTK_server_IP, RTK_server_port);
 
     SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback,1);
     SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback,1);
@@ -284,21 +343,12 @@ void InertialSenseROS::configure_rtk()
   }
   else if (RTK_base)
   {
-    // [type]:[ip/url]:[port]
-    std::string RTK_connection = "TCP:" + RTK_server_IP + ":" + std::to_string(RTK_server_port);
     RTK_.enabled = true;
     ROS_INFO("InertialSense: Configured as RTK Base");
     RTK_state_ = RTK_BASE;
     RTKCfgBits |= RTK_CFG_BITS_BASE_OUTPUT_GPS1_UBLOX_SER0;
 
-    if (IS_.CreateHost(RTK_connection))
-    {
-      ROS_INFO_STREAM("Successfully created " << RTK_connection << " as RTK server");
-      initialized_ = true;
-      return;
-    }
-    else
-      ROS_ERROR_STREAM("Failed to create base server at " << RTK_connection);
+    start_rtk_server(RTK_server_IP, RTK_server_port);
   }
   IS_.SendData(DID_FLASH_CONFIG, reinterpret_cast<uint8_t*>(&RTKCfgBits), sizeof(RTKCfgBits), offsetof(nvm_flash_cfg_t, RTKCfgBits));
 }

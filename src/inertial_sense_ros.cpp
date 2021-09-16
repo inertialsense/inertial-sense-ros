@@ -7,7 +7,7 @@
 #include <ISPose.h>
 
 InertialSenseROS::InertialSenseROS() :
-  nh_(), nh_private_("~"), initialized_(false)
+  nh_(), nh_private_("~"), initialized_(false), rtk_connectivity_watchdog_timer_()
 {
   connect();
   set_navigation_dt_ms();
@@ -211,6 +211,8 @@ void InertialSenseROS::configure_parameters()
 
 void InertialSenseROS::connect_rtk_client(const std::string& RTK_correction_protocol, const std::string& RTK_server_IP, const int RTK_server_port)
 {
+  rtk_connecting_ = true;
+
   std::string RTK_server_mount;
   std::string RTK_server_username;
   std::string RTK_server_password;
@@ -260,6 +262,8 @@ void InertialSenseROS::connect_rtk_client(const std::string& RTK_correction_prot
       }
     }
   }
+
+  rtk_connecting_ = false;
 }
 
 void InertialSenseROS::start_rtk_server(const std::string& RTK_server_IP, const int RTK_server_port)
@@ -276,6 +280,68 @@ void InertialSenseROS::start_rtk_server(const std::string& RTK_server_IP, const 
     else
       ROS_ERROR_STREAM("Failed to create base server at " << RTK_connection);
 
+}
+
+void InertialSenseROS::start_rtk_connectivity_watchdog_timer()
+{
+  bool rtk_connectivity_watchdog_enabled;
+  // default is false for legacy compatibility
+  nh_private_.param<bool>("RTK_connectivity_watchdog_enabled", rtk_connectivity_watchdog_enabled, false);
+  if (!rtk_connectivity_watchdog_enabled)
+  {
+    return;
+  }
+
+  if (!rtk_connectivity_watchdog_timer_.isValid())
+  {
+    float rtk_connectivity_watchdog_timer_frequency;
+    nh_private_.param<float>("RTK_connectivity_watchdog_timer_frequency", rtk_connectivity_watchdog_timer_frequency, 1);
+    rtk_connectivity_watchdog_timer_ = nh_.createTimer(ros::Duration(rtk_connectivity_watchdog_timer_frequency), InertialSenseROS::rtk_connectivity_watchdog_timer_callback , this);
+  }
+
+  rtk_connectivity_watchdog_timer_.start();
+}
+
+void InertialSenseROS::stop_rtk_connectivity_watchdog_timer()
+{
+  rtk_traffic_total_byte_count_ = 0;
+  rtk_data_transmission_interruption_count_ = 0;
+  rtk_connectivity_watchdog_timer_.stop();
+}
+
+void InertialSenseROS::rtk_connectivity_watchdog_timer_callback(const ros::TimerEvent& timer_event)
+{
+  if (rtk_connecting_)
+  {
+    return;
+  }
+
+  int latest_byte_count = IS_.GetClientServerByteCount();
+  if (rtk_traffic_total_byte_count_ == latest_byte_count)
+  {
+    ++rtk_data_transmission_interruption_count_;
+
+    int rtk_data_transmission_interruption_limit_;
+    nh_private_.param<int>("RTK_data_transmission_interruption_limit", rtk_data_transmission_interruption_limit_, 5);
+    if (rtk_data_transmission_interruption_count_ >= rtk_data_transmission_interruption_limit_)
+    {
+      ROS_WARN("RTK transmission interruption, reconnecting...");
+
+      std::string RTK_correction_protocol;
+      std::string RTK_server_IP;
+      int RTK_server_port;
+      nh_private_.param<std::string>("RTK_correction_protocol", RTK_correction_protocol, "RTCM3");
+      nh_private_.param<std::string>("RTK_server_IP", RTK_server_IP, "127.0.0.1");
+      nh_private_.param<int>("RTK_server_port", RTK_server_port, 7777);
+
+      connect_rtk_client(RTK_correction_protocol, RTK_server_IP, RTK_server_port);
+    }
+  }
+  else
+  {
+    rtk_traffic_total_byte_count_ = latest_byte_count;
+    rtk_data_transmission_interruption_count_ = 0;
+  }
 }
 
 void InertialSenseROS::configure_rtk()
@@ -340,6 +406,8 @@ void InertialSenseROS::configure_rtk()
     RTK_.enabled = true;
     RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
     RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+
+    start_rtk_connectivity_watchdog_timer();
   }
   else if (RTK_base)
   {

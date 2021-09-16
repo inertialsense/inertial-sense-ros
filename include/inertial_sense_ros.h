@@ -131,6 +131,14 @@ public:
   ros::Timer obs_bundle_timer_;
   ros::Time last_obs_time_;
 
+  bool rtk_connecting_ = false;
+  int rtk_traffic_total_byte_count_ = 0;
+  int rtk_data_transmission_interruption_count_ = 0;
+  ros::Timer rtk_connectivity_watchdog_timer_;
+  void start_rtk_connectivity_watchdog_timer();
+  void stop_rtk_connectivity_watchdog_timer();
+  void rtk_connectivity_watchdog_timer_callback(const ros::TimerEvent& timer_event);
+
   ros_stream_t GPS_info_;
   void GPS_info_callback(const gps_sat_t* const msg);
 

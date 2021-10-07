@@ -1,18 +1,19 @@
-# GPS status flags
-uint32 GPS_STATUS_FIX_TYPE_NO_FIX               = 0
-uint32 GPS_STATUS_FIX_TYPE_DEAD_RECKONING_ONLY  = 256
-uint32 GPS_STATUS_FIX_TYPE_2D_FIX               = 512
-uint32 GPS_STATUS_FIX_TYPE_3D_FIX               = 768
-uint32 GPS_STATUS_FIX_TYPE_GPS_PLUS_DEAD_RECK   = 1024
-uint32 GPS_STATUS_FIX_TYPE_TIME_ONLY_FIX        = 1280
-uint32 GPS_STATUS_FIX_TYPE_RESERVED1            = 1536
-uint32 GPS_STATUS_FIX_TYPE_RESERVED2            = 1792
+# GPS fix status
+uint32 GPS_STATUS_FIX_NO_FIX                    = 0
+uint32 GPS_STATUS_FIX_DEAD_RECKONING_ONLY       = 256
+uint32 GPS_STATUS_FIX_2D_FIX                    = 512
+uint32 GPS_STATUS_FIX_3D_FIX                    = 768
+uint32 GPS_STATUS_FIX_GPS_PLUS_DEAD_RECK        = 1024
+uint32 GPS_STATUS_FIX_TIME_ONLY_FIX             = 1280
+uint32 GPS_STATUS_FIX_RESERVED1                 = 1536
+uint32 GPS_STATUS_FIX_RESERVED2                 = 1792
 uint32 GPS_STATUS_FIX_RTK_SINGLE                = 3560
 uint32 GPS_STATUS_FIX_RTK_FLOAT                 = 2816
 uint32 GPS_STATUS_FIX_RTK_FIX                   = 3072
 uint32 GPS_STATUS_FIX_MASK                      = 7936
 uint32 GPS_STATUS_FIX_BIT_OFFSET                = 8
 
+# GPS status flags
 uint32 GPS_STATUS_FLAGS_FIX_OK                         = 65536      # Within limits (e.g. DOP & accuracy)
 uint32 GPS_STATUS_FLAGS_DGPS_USED                      = 131072     # Differential GPS (DGPS) used.
 uint32 GPS_STATUS_FLAGS_RTK_FIX_AND_HOLD               = 262144     # RTK feedback on the integer solutions to drive the float biases towards the resolved integers

@@ -15,6 +15,7 @@
 #include "sensor_msgs/FluidPressure.h"
 #include "sensor_msgs/JointState.h"
 #include "inertial_sense_ros/GPS.h"
+#include "data_sets.h"
 #include "inertial_sense_ros/GPSInfo.h"
 #include "inertial_sense_ros/PreIntIMU.h"
 #include "inertial_sense_ros/FirmwareUpdate.h"

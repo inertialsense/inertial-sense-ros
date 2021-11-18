@@ -42,6 +42,7 @@ void InertialSenseROS::configure_data_streams()
   SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback,1); // we always need GPS for Fix status
   SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback,1); // we always want the strobe
   
+  strobe_pub_ = nh_.advertise<std_msgs::Header>("strobe_time", 1);
 
   nh_private_.param<bool>("stream_INS", INS_.enabled, true);
   if (INS_.enabled)

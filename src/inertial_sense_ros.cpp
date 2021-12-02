@@ -1141,7 +1141,7 @@ void InertialSenseROS::reset_device()
 bool InertialSenseROS::update_firmware_srv_callback(inertial_sense_ros::FirmwareUpdate::Request &req, inertial_sense_ros::FirmwareUpdate::Response &res)
 {
   IS_.Close();
-  vector<InertialSense::bootloader_result_t> results = IS_.BootloadFile("*", req.filename, 921600);
+  vector<InertialSense::bootload_result_t> results = IS_.BootloadFile("*", req.filename, 921600);
   if (!results[0].error.empty())
   {
     res.success = false;

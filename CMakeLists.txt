@@ -30,6 +30,9 @@ add_message_files(
   GNSSObservation.msg
   GNSSObsVec.msg
   INL2States.msg
+  DID_INS2.msg
+  DID_INS1.msg
+  DID_INS4.msg
 )
 
 add_service_files(

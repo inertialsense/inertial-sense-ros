@@ -4,7 +4,7 @@
     inertial_sense_node: { port: "/dev/ttyUSB0",
                            baud: 921600,
                            navigation_dt_ms: 10,
-                           stream_INS: true,
+                           stream_odom_ins_ned: true,
                            stream_IMU: false,
                            stream_GPS: false,
                            stream_GPS_info: false,

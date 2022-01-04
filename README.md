@@ -52,14 +52,26 @@ In an ideal setting, there should be no jump in timestamps when GPS is first acq
 ## Topics
 
 Topics are enabled and disabled using parameters.  By default, only the `ins` topic is published to save processor time in serializing unecessary messages.
-- `ins`(nav_msgs/Odometry)
-    - full 12-DOF measurements from onboard estimator (pose portion is from inertial to body, twist portion is in body frame)
+- `odom_ins_ned`(nav_msgs/Odometry)
+    - full 12-DOF measurements from onboard estimator in NED frame.
+- `odom_ins_enu`(nav_msgs/Odometry)
+    - full 12-DOF measurements from onboard estimator in ENU frame.
+- `odom_ins_ecef`(nav_msgs/Odometry)
+    - full 12-DOF measurements from onboard estimator in ECEF frame.
+- `DID_INS_1`(inertial_sense_ros/DID_INS_1)
+    - Standard Inertial Sense [DID_INS_1](https://docs.inertialsense.com/user-manual/com-protocol/DID-descriptions/#did_ins_1) Definition
+- `DID_INS_2`(inertial_sense_ros/DID_INS_2)
+    - Standard Inertial Sense [DID_INS_2](https://docs.inertialsense.com/user-manual/com-protocol/DID-descriptions/#did_ins_2) Definition
+- `DID_INS_4`(inertial_sense_ros/DID_INS_4)
+    - Standard Inertial Sense [DID_INS_4](https://docs.inertialsense.com/user-manual/com-protocol/DID-descriptions/#did_ins_4) Definition
 - `imu`(sensor_msgs/Imu)
     - Raw Imu measurements from IMU1 (NED frame)
 - `gps`(inertial_sense_ros/GPS)
     - unfiltered GPS measurements from onboard GPS unit
 - `gps/info`(inertial_sense_ros/GPSInfo)
-    - sattelite information and carrier noise ratio array for each sattelite
+    - satelite information and carrier noise ratio array for each sattelite
+- `NavSatFix`(sensor_msgs/NavSatFix)
+    - Standard ROS sensor_msgs/NavSatFix data
 - `mag` (sensor_msgs/MagneticField)
     - Raw magnetic field measurement from magnetometer 1
 - `baro` (sensor_msgs/FluidPressure)
@@ -70,8 +82,15 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
     - information about RTK status
 - `RTK/rel` (inertial_sense_ros/RTKRel)
     * Relative measurement between RTK base and rover
+- `inl2_states` (inertial_sense_ros/INL2States)
+    * INS Extended Kalman Filter (EKF) states [DID_INL2_STATES](https://docs.inertialsense.com/user-manual/com-protocol/DID-descriptions/#did_inl2_states) Definition
+- `diagnostics` (diagnostic_msgs/DiagnosticArray)
+    - Diagnostic message of RTK status.
+- `strobe_time` (std_msgs/Header)
+    - Timestamp of strobe in message header
 
-!!! important RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data.
+
+__*Note: RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data.__
 - `gps/obs` (inertial_sense_ros/GNSSObservation)
     * Raw satellite observation (psuedorange and carrier phase)
 - `gps/eph` (inertial_sense_ros/GNSSEphemeris)
@@ -81,20 +100,36 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
 
 ## Parameters
 
-* `~port` (string, default: "/dev/ttyUSB0")
+* `~port` (string, default: "/dev/ttyACM0")
   - Serial port to connect to
 * `~baudrate` (int, default: 921600)
   - baudrate of serial communication
 * `~frame_id` (string, default "body")
   - frame id of all measurements
-* `~LTCF` (int, default: 0)
-  - Local Tangent Coordinate Frame: 0 - NED, 1 - ENU
+* `enable_log` (bool, default: false)
+  - enable Inertial Sense Logger
 
 **Topic Configuration**
 * `~navigation_dt_ms` (int, default: Value retrieved from device flash configuration)
    - milliseconds between internal navigation filter updates (min=2ms/500Hz).  This is also determines the rate at which the topics are published.
-* `~stream_INS` (bool, default: true)
-   - Flag to stream navigation solution or not
+* `~stream_DID_INS_1` (bool, default: false)
+   - Flag to stream DID_INS_1 message
+* `~stream_DID_INS_2` (bool, default: false)
+   - Flag to stream DID_INS_2 message
+* `~stream_DID_INS_4` (bool, default: false)
+   - Flag to stream DID_INS_4 message
+* `~stream_odom_ins_ned` (bool, default: true)
+   - Flag to stream navigation solution in NED
+* `~stream_odom_ins_enu` (bool, default: false)
+   - Flag to stream navigation solution in ENU
+* `~stream_odom_ins_ecef` (bool, default: false)
+   - Flag to stream navigation solution in ECEF
+* `~stream_covariance_data` (bool, default: false)
+   - Flag to stream navigation covariance data
+
+     __*Note__ - Data set is 176 bytes. Care should be taken to ensure sufficient bandwidth
+* `~stream_INL2_states` (bool, default: false)    
+    - Flag to stream INS2 state data
 * `~stream_IMU` (bool, default: false)
    - Flag to stream IMU measurements or not
 * `~stream_baro` (bool, default: false)
@@ -109,28 +144,57 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
    - Flag to stream GPS info messages
 - `~stream_GPS_raw` (bool, default: false)
    - Flag to stream GPS raw messages
+- `stream_NavSatFix` (bool, default: false)
+    -Flag to stream NavSatFix message
 - `~publishTf`(bool, default: true)
    - Flag to publish Tf transformations 'ins' to 'body_link'
+* `~stream_diagnostics` (bool, default: true)
+    -Flag to stream diagnostics data
 
-**RTK Configuration**
+## RTK Configuration
+
 * `~RTK_rover` (bool, default: false)
   - Enables RTK rover mode (requires base corrections from an RTK base)
 * `~RTK_base` (bool, default: false)
   - Makes the connected uINS a RTK base station and enables the publishing of corrections
 * `~dual_GNSS` (bool, default: false)
   - Uses both GPS antennas in a dual-GNSS configuration
+* `~RTK_rover_radio_enable` (bool, default: false)
+    - Enable radio on EVB2 for base corrections
+* `~RTK_correction_protocol` (string, default: RTCM3)
+    - Options are RTCM3 and UBLOX (for M8 receiver).  Rover and base must match.
+* `~RTK_connection_attempt_limit` (string, default: RTCM3)
+    - Number of times to attempt NTRIP connection
+* `~RTK_connection_attempt_backoff` (string, default: RTCM3)
+  - Sleep duration parameter. Sleep duration = attempt limit x attempt backoff
+* `RTK_connectivity_watchdog_enabled` (bool default: false)
+    - Data reception watchdog
+* `RTK_connectivity_watchdog_timer_frequency` (float, default: 1)
+
+**TCP Configuration**
 * `~RTK_server_IP` (string, default: 127.0.0.1)
   - If operating as base, attempts to create a TCP port on this IP for base corrections, if rover, connects to this IP for corrections.
 * `~RTK_server_port` (int, default: 7777)
   - If operating as base, creates a TCP connection at this port for base corrections, if rover, connects to this port for corrections.
-* `~RTK_correction_protocol` (string, default: RTCM3)
-  - Options are RTCM3 and UBLOX (for M8 receiver).  Rover and base must match.
+
+**NTRIP Configuration**
+
+__*Note: These values must be clear for TCP configuration to work__
+* `~RTK_server_mount` (string, default: "")
+  - NTRIP mount point
+* `~RTK_server_username` (string, default: "")
+  - NTRIP username
+* `~RTK_server_password` (string, default: "")
+  - NTRIP password
+
 
 **Sensor Configuration**
 * `~INS_rpy_radians` (vector(3), default: {0, 0, 0})
     - The roll, pitch, yaw rotation from the INS frame to the output frame
 * `~INS_xyz` (vector(3), default: {0, 0, 0})
     - The NED translation vector between the INS frame and the output frame (wrt output frame)
+* `~gps_type` (string, default: "F9P")
+    - Which receiver type: "F9P" or "M8"
 * `~GPS_ant1_xyz` (vector(3), default: {0, 0, 0})
     - The NED translation vector between the INS frame and the GPS 1 antenna (wrt INS frame)
 * `~GPS_ant2_xyz` (vector(3), default: {0, 0, 0})
@@ -153,7 +217,7 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
        - 8 = airborne 4G
        - 9 = wrist
 
-**ASCII Output Configuration**
+<!-- **ASCII Output Configuration**
 * `~ser1_baud_rate` (int, default: 921600)
     - baud rate for serial1 port used for external NMEA messaging (located on H6-5) [serial port hardware connections](http://docs.inertialsense.com/user-manual/Setup_Integration/hardware_integration/#pin-definition)
 * `~NMEA_rate` (int, default: 0)
@@ -167,7 +231,7 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
 * `~NMEA_ports` (int, default: 0x00)
     - bitmask to enable NMEA message on serial ports (bitwise OR to enable both ports) 
       - Ser0 (USB/H4-4)  = 0x01 
-      - Ser1 (H6-5) = 0x02 
+      - Ser1 (H6-5) = 0x02  -->
 
 ## Services
 - `single_axis_mag_cal` (std_srvs/Trigger)

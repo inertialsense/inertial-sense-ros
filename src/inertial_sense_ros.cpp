@@ -544,8 +544,13 @@ void InertialSenseROS::set_vector_flash_config(std::string param_name, uint32_t 
 {
     std::vector<double> tmp(size, 0);
     T v[size];
-    if (nh_private_.hasParam(param_name))
-        nh_private_.getParam(param_name, tmp);
+    if (!nh_private_.hasParam(param_name))
+    {   // Parameter not provided.
+        return;
+    }
+
+    nh_private_.getParam(param_name, tmp);
+
     for (int i = 0; i < size; i++)
     {
         v[i] = tmp[i];

@@ -179,6 +179,7 @@ public:
     void diagnostics_callback(const ros::TimerEvent &event);
     ros::Timer diagnostics_timer_;
     float diagnostic_ar_ratio_, diagnostic_differential_age_, diagnostic_heading_base_to_rover_;
+    uint diagnostic_fix_type_;
 
     ros_stream_t GPS_;
     ros_stream_t NavSatFix_;

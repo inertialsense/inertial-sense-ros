@@ -23,8 +23,8 @@ InertialSenseROS::InertialSenseROS() : nh_(), nh_private_("~"), initialized_(fal
     firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
 
     configure_parameters();
-    configure_rtk();
     configure_data_streams();
+    configure_rtk();
 
     nh_private_.param<bool>("enable_log", log_enabled_, false);
     if (log_enabled_)
@@ -39,8 +39,9 @@ InertialSenseROS::InertialSenseROS() : nh_(), nh_private_("~"), initialized_(fal
 
 void InertialSenseROS::configure_data_streams()
 {
-    SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback, 1); // we always want the strobe
+    
     IS_.StopBroadcasts(true);
+    SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback, 1); // we always want the strobe
     nh_private_.param<bool>("stream_DID_INS_1", DID_INS_1_.enabled, false);
     nh_private_.param<bool>("stream_DID_INS_2", DID_INS_2_.enabled, false);
     nh_private_.param<bool>("stream_DID_INS_4", DID_INS_4_.enabled, false);
@@ -1203,6 +1204,29 @@ void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
         rtk_rel.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs / 1000.0);
         rtk_rel.differential_age = msg->differentialAge;
         rtk_rel.ar_ratio = msg->arRatio;
+        uint32_t fixStatus = msg->status & GPS_STATUS_FIX_MASK;
+        if (fixStatus == GPS_STATUS_FIX_3D)
+        {
+            rtk_rel.eGpsNavFixStatus = inertial_sense_ros::RTKRel::GPS_STATUS_FIX_3D;
+        }
+        else if (fixStatus == GPS_STATUS_FIX_RTK_SINGLE)
+        {
+            rtk_rel.eGpsNavFixStatus = inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_SINGLE;
+        }
+        else if (fixStatus == GPS_STATUS_FIX_RTK_FLOAT)
+        {
+            rtk_rel.eGpsNavFixStatus = inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_FLOAT;
+        }
+        else if (fixStatus == GPS_STATUS_FIX_RTK_FIX)
+        {
+            rtk_rel.eGpsNavFixStatus = inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_FIX;
+        }
+        else if (msg->status & GPS_STATUS_FLAGS_RTK_FIX_AND_HOLD)
+        {
+            rtk_rel.eGpsNavFixStatus = inertial_sense_ros::RTKRel::GPS_STATUS_FLAGS_RTK_FIX_AND_HOLD;
+        }
+        
+        
         rtk_rel.vector_base_to_rover.x = msg->baseToRoverVector[0];
         rtk_rel.vector_base_to_rover.y = msg->baseToRoverVector[1];
         rtk_rel.vector_base_to_rover.z = msg->baseToRoverVector[2];
@@ -1214,6 +1238,7 @@ void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
         diagnostic_ar_ratio_ = rtk_rel.ar_ratio;
         diagnostic_differential_age_ = rtk_rel.differential_age;
         diagnostic_heading_base_to_rover_ = rtk_rel.heading_base_to_rover;
+        diagnostic_fix_type_ = rtk_rel.eGpsNavFixStatus;
     }
 }
 
@@ -1380,18 +1405,31 @@ void InertialSenseROS::diagnostics_callback(const ros::TimerEvent &event)
         ar_ratio.key = "AR Ratio";
         ar_ratio.value = std::to_string(diagnostic_ar_ratio_);
         rtk_status.values.push_back(ar_ratio);
-        if (diagnostic_ar_ratio_ < 3.0)
+        if (diagnostic_fix_type_ == inertial_sense_ros::RTKRel::GPS_STATUS_FIX_3D)
         {
             rtk_status.level = diagnostic_msgs::DiagnosticStatus::WARN;
+            rtk_message = "3D: " + std::to_string(diagnostic_ar_ratio_);
+        }
+        else if (diagnostic_fix_type_ == inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_SINGLE)
+        {
+            rtk_status.level = diagnostic_msgs::DiagnosticStatus::WARN;
+            rtk_message = "Single: " + std::to_string(diagnostic_ar_ratio_);
+        }
+        else if (diagnostic_fix_type_ == inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_FLOAT)
+        {
             rtk_message = "Float: " + std::to_string(diagnostic_ar_ratio_);
         }
-        else if (diagnostic_ar_ratio_ < 6.0)
+        else if (diagnostic_fix_type_ == inertial_sense_ros::RTKRel::GPS_STATUS_FIX_RTK_FIX)
         {
             rtk_message = "Fix: " + std::to_string(diagnostic_ar_ratio_);
         }
-        else
+        else if (diagnostic_fix_type_ == inertial_sense_ros::RTKRel::GPS_STATUS_FLAGS_RTK_FIX_AND_HOLD)
         {
             rtk_message = "Fix and Hold: " + std::to_string(diagnostic_ar_ratio_);
+        }
+        else
+        {
+            rtk_message = "Unknown Fix: " + std::to_string(diagnostic_ar_ratio_);
         }
 
         // Differential age

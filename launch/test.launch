@@ -1,9 +1,9 @@
   <launch>
 	<rosparam subst_value="True">
 
-    inertial_sense_node: { port: "/dev/ttyUSB0",
+    inertial_sense_node: { port: "/dev/ttyACM0",
                            baud: 921600,
-                           navigation_dt_ms: 10,
+                           navigation_dt_ms: 4,
                            stream_odom_ins_ned: true,
                            stream_IMU: false,
                            stream_GPS: false,
@@ -24,5 +24,5 @@
                            NMEA_ports: 0x02
                          }
     </rosparam>
-	<node name="inertial_sense_node" pkg="inertial_sense" type="inertial_sense_node" output="screen"/>
+	<node name="inertial_sense_node" pkg="inertial_sense_ros" type="inertial_sense_node" output="screen"/>
 </launch>

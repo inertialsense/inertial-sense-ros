@@ -22,7 +22,7 @@ InertialSenseROS::InertialSenseROS() : nh_(), nh_private_("~"), initialized_(fal
     multi_mag_cal_srv_ = nh_.advertiseService("multi_axis_mag_cal", &InertialSenseROS::perform_multi_mag_cal_srv_callback, this);
     firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
 
-    configure_parameters();
+    configure_flash_parameters();
     configure_data_streams();
     configure_rtk();
 
@@ -315,7 +315,7 @@ void InertialSenseROS::set_navigation_dt_ms()
     }
 }
 
-void InertialSenseROS::configure_parameters()
+void InertialSenseROS::configure_flash_parameters()
 {
     set_vector_flash_config<float>("INS_rpy_radians", 3, offsetof(nvm_flash_cfg_t, insRotation));
     set_vector_flash_config<float>("INS_xyz", 3, offsetof(nvm_flash_cfg_t, insOffset));

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(inertial_sense_ros)
 
+find_package(yaml-cpp REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -55,6 +56,7 @@ catkin_package(
 
 include_directories(include
   ${catkin_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIR}
   lib/inertial-sense-sdk/src #This line of CMakeList.txt stays in .external file to reference submodule
 )
 
@@ -63,7 +65,7 @@ add_subdirectory(lib/inertial-sense-sdk)
 add_library(inertial_sense_ros
         src/inertial_sense_ros.cpp
 )
-target_link_libraries(inertial_sense_ros InertialSense ${catkin_LIBRARIES} pthread)
+target_link_libraries(inertial_sense_ros InertialSense ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES} pthread)
 target_include_directories(inertial_sense_ros PUBLIC include lib/inertial-sense-sdk/src)
 add_dependencies(inertial_sense_ros inertial_sense_ros_generate_messages_cpp)
 

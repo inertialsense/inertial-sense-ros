@@ -1837,15 +1837,15 @@ bool InertialSenseROS::get_node_param_yaml(YAML::Node node, const std::string ke
         }
         catch (const YAML::KeyNotFound &knf)
         {
-            std::cout << "get_node_param_yaml(): Key \"" + key + "\" failed to load.\n";
-            std::cout << "\n\nDefault parameter will be used.\n\n\n";
+            std::cout << "\nget_node_param_yaml(): Key \"" + key + "\" failed to load.\n";
+            std::cout << "Default parameter will be used.\n";
             return false;
         }
     }
     else
     {
-        std::cout << "\n\nget_node_param_yaml(): Key \"" + key + "\" not found in yaml node.\n";
-        std::cout << "\n\nDefault parameter will be used.\n\n\n";
+        std::cout << "\nget_node_param_yaml(): Key \"" + key + "\" not found in yaml node.\n";
+        std::cout << "Default parameter will be used.\n";
         return false;
     }
 }

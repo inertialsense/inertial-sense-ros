@@ -210,7 +210,7 @@ __*Note: These values must be clear for TCP configuration to work__
        - 0 = portable
        - 2 = stationary
        - 3 = pedestrian
-       - 4 = automotive
+       - 4 = ground vehicle
        - 5 = sea
        - 6 = airborne 1G
        - 7 = airborne 2G

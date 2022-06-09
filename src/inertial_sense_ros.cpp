@@ -11,11 +11,11 @@
 #include "ISEarth.h"
 
 
-InertialSenseROS::InertialSenseROS(std::string paramYAMLPath, bool configFlashParameters) : nh_(), nh_private_("~"), initialized_(false), rtk_connectivity_watchdog_timer_()
+InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParameters) : nh_(), nh_private_("~"), initialized_(false), rtk_connectivity_watchdog_timer_()
 {
-    if (paramYAMLPath != "")
+    if (paramNode != YAML::Node())
     {
-        load_params_yaml(paramYAMLPath);
+        load_params_yaml(paramNode);
     }
     else
     {
@@ -48,20 +48,8 @@ InertialSenseROS::InertialSenseROS(std::string paramYAMLPath, bool configFlashPa
     initialized_ = true;
 }
 
-void InertialSenseROS::load_params_yaml(string paramYAMLPath)
+void InertialSenseROS::load_params_yaml(YAML::Node node)
 {
-    YAML::Node node;
-    try
-    {
-        YAML::Node fileNode = YAML::LoadFile(paramYAMLPath);
-        node = fileNode["inertial_sense_ros"];
-    }
-    catch (const YAML::BadFile &bf)
-    {
-        std::cout << "\n\nLoading file failed: " << paramYAMLPath << "\n\n\n";
-        std::cout << "\n\nDefault parameters will be used.\n\n\n";
-    }
-
     get_node_param_yaml(node, "port", port_);
     get_node_param_yaml(node, "navigation_dt_ms", navigation_dt_ms_);
     get_node_param_yaml(node, "baudrate", baudrate_);
@@ -1837,15 +1825,13 @@ bool InertialSenseROS::get_node_param_yaml(YAML::Node node, const std::string ke
         }
         catch (const YAML::KeyNotFound &knf)
         {
-            std::cout << "\nget_node_param_yaml(): Key \"" + key + "\" failed to load.\n";
-            std::cout << "Default parameter will be used.\n";
+            std::cout << "get_node_param_yaml(): Key \"" + key + "\" not found.  Using default value.\n";
             return false;
         }
     }
     else
     {
-        std::cout << "\nget_node_param_yaml(): Key \"" + key + "\" not found in yaml node.\n";
-        std::cout << "Default parameter will be used.\n";
+        std::cout << "get_node_param_yaml(): Key \"" + key + "\" not in yaml node.  Using default value.\n";
         return false;
     }
 }
@@ -1859,7 +1845,6 @@ bool InertialSenseROS::get_node_vector_yaml(YAML::Node node, const std::string k
         try
         {
             vec = node[key].as<std::vector<double>>();
-
             for (int i = 0; i < size; i++)
             {
                 val[i] = vec[i];
@@ -1868,14 +1853,13 @@ bool InertialSenseROS::get_node_vector_yaml(YAML::Node node, const std::string k
         }
         catch (...)
         {
-            std::cout << "get_node_param_yaml(): Key \"" + key + "\" failed to load.\n";
-            std::cout << "\n\nDefault parameter will be used.\n\n\n";
+            std::cout << "get_node_param_yaml(): Key \"" + key + "\" not found.  Using default value.\n";
+            return false;
         }
     }
     else
     {
-        std::cout << "\n\nget_node_param_yaml(): Key \"" + key + "\" not found in yaml node.\n";
-        std::cout << "\n\nDefault parameter will be used.\n\n\n";
+        std::cout << "get_node_param_yaml(): Key \"" + key + "\" not in yaml node.  Using default value.\n";
         return false;
     }
 }

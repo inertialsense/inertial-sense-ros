@@ -66,12 +66,12 @@ public:
         NMEA_SER1 = 0x02
     } NMEA_message_config_t;
 
-    InertialSenseROS(std::string paramYAMLPath = "", bool configFlashParameters = true);
+    InertialSenseROS(YAML::Node paramNode = YAML::Node(), bool configFlashParameters = true);
     void callback(p_data_t *data);
     void update();
 
     void load_params_srv();
-    void load_params_yaml(string param_file);
+    void load_params_yaml(YAML::Node node);
     template <typename Type>
     bool get_node_param_yaml(YAML::Node node, const std::string key, Type &val);
     template <typename Derived1>
@@ -369,6 +369,6 @@ public:
     double refLla_[3] = {0, 0, 0};
     float magInclination_ = 0;
     float magDeclination_ = 0;
-    int insDynModel_ = 8;
+    int insDynModel_ = DYN_AIRBORNE_4G;
     bool refLLA_known = false;
 };

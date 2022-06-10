@@ -13,8 +13,7 @@
 
 InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParameters) : nh_(), nh_private_("~"), initialized_(false), rtk_connectivity_watchdog_timer_()
 {
-    // if (paramNode != YAML::Node())
-    if (1)
+    if (paramNode.IsDefined())
     {
         load_params_yaml(paramNode);
     }

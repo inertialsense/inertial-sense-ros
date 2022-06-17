@@ -6,7 +6,7 @@ int main(int argc, char**argv)
     ros::init(argc, argv, "inertial_sense_node");
     if (argc > 1)
     {
-        string paramYamlPath = argv[1];
+        std::string paramYamlPath = argv[1];
         YAML::Node node;
         try
         {

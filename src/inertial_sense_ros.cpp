@@ -1593,7 +1593,7 @@ bool InertialSenseROS::set_current_position_as_refLLA(std_srvs::Trigger::Request
     {
         comManagerGetData(0, DID_FLASH_CONFIG, 0, 0, 0);
         res.success = true;
-        res.message = ("Update was succesful.  refLla: Lat: " + to_string(current_lla_[0]) + "  Lon: " + to_string(current_lla_[1]) + "  Alt: " + to_string(current_lla_[2]));
+        res.message = ("Update was succesful.  refLla: Lat: " + std::to_string(current_lla_[0]) + "  Lon: " + std::to_string(current_lla_[1]) + "  Alt: " + std::to_string(current_lla_[2]));
     }
     else
     {
@@ -1625,7 +1625,7 @@ bool InertialSenseROS::set_refLLA_to_value(inertial_sense_ros::refLLAUpdate::Req
     {
         comManagerGetData(0, DID_FLASH_CONFIG, 0, 0, 0);
         res.success = true;
-        res.message = ("Update was succesful.  refLla: Lat: " + to_string(req.lla[0]) + "  Lon: " + to_string(req.lla[1]) + "  Alt: " + to_string(req.lla[2]));
+        res.message = ("Update was succesful.  refLla: Lat: " + std::to_string(req.lla[0]) + "  Lon: " + std::to_string(req.lla[1]) + "  Alt: " + std::to_string(req.lla[2]));
     }
     else
     {

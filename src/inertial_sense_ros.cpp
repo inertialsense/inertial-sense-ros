@@ -33,11 +33,14 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     mag_cal_srv_ = nh_.advertiseService("single_axis_mag_cal", &InertialSenseROS::perform_mag_cal_srv_callback, this);
     multi_mag_cal_srv_ = nh_.advertiseService("multi_axis_mag_cal", &InertialSenseROS::perform_multi_mag_cal_srv_callback, this);
     firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
-    data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
+    //data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
 
     configure_flash_parameters();
     IS_.StopBroadcasts(true);
-    configure_rtk();
+    configure_data_streams();
+    configure_rtk(); //TODO: Add checks for these
+    //data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
+    
     
     if (log_enabled_)
     {
@@ -159,24 +162,40 @@ void InertialSenseROS::load_params_srv()
     get_vector_flash_config("GPS_ant2_xyz", 3, gps2AntOffset_);
     get_vector_flash_config("GPS_ref_lla", 3, refLla_);
 }
-void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
+// void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
+void InertialSenseROS::configure_data_streams()
 {   
+    while(1){
     if (flashConfigStreaming_&&\
         ((DID_INS_1_.enabled && ins1Streaming_) || !DID_INS_1_.enabled) &&\
         ((DID_INS_2_.enabled && ins2Streaming_) || !DID_INS_2_.enabled) &&\
-        ((DID_INS_4_.enabled && ins4Streaming_) || !DID_INS_4_.enabled)
+        ((DID_INS_4_.enabled && ins4Streaming_) || !DID_INS_4_.enabled) &&\
+        ((odom_ins_ned_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
+        ((odom_ins_ecef_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
+        ((odom_ins_enu_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
+        ((INL2_states_.enabled && inl2StatesStreaming_) || !INL2_states_.enabled) &&\
+        gpsPosStreaming_ &&\
+        gpsVelStreaming_ &&\
+        ((GPS_obs_.enabled && gpsRawStreaming_) || !GPS_obs_.enabled) &&\
+        ((GPS_info_.enabled && gpsInfoStreaming_) || !GPS_info_.enabled) &&\
+        ((mag_.enabled && magStreaming_) || !mag_.enabled) &&\
+        ((baro_.enabled && baroStreaming_) || !baro_.enabled) &&\
+        ((preint_IMU_.enabled && preintImuStreaming_) || !preint_IMU_.enabled) &&\
+        ((IMU_.enabled && imuStreaming_) || !IMU_.enabled) &&\
+        ((diagnostics_.enabled && diagnosticsStreaming_) || !diagnostics_.enabled)
         )
         
         {data_stream_timer_.stop();
-        ROS_INFO("Data streams successfully enabled.");
+        ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
         return;
         }
-
-    //if (!strobeInStreaming_)
-    //{
+    ROS_INFO("Somethings not right still");
+    if (!strobeInStreaming_)
+    {
         ROS_INFO("Attempting to enable strobe in data stream.");
         SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback, 1); // we always want the strobe
-    //}    
+        strobeInStreaming_ = true;
+    } 
     if (!flashConfigStreaming_)
     {
         ROS_INFO("Attempting to enable flash config data stream.");
@@ -201,7 +220,7 @@ void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
         DID_INS_4_.pub = nh_.advertise<inertial_sense_ros::DID_INS4>("DID_INS_4", 1);
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);
     }
-    if (odom_ins_ned_.enabled && (!ins4Streaming_ || !preintImuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    if (odom_ins_ned_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
     {
         ROS_INFO("Attempting to enable odom INS NED data stream.");
         odom_ins_ned_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ned", 1);
@@ -230,7 +249,7 @@ void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
         }
     }
 
-    if (odom_ins_ecef_.enabled && (!ins4Streaming_ || !preintImuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    if (odom_ins_ecef_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
     {
         ROS_INFO("Attempting to enable odom INS ECEF data stream.");
         odom_ins_ecef_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ecef", 1);
@@ -258,7 +277,7 @@ void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
             }
         }
     }
-    if (odom_ins_enu_.enabled && (!ins4Streaming_ || !preintImuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    if (odom_ins_enu_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
     {
         ROS_INFO("Attempting to enable odom INS ENU data stream.");
         odom_ins_enu_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_enu", 1);
@@ -365,7 +384,7 @@ void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
     }
 
     // Set up the barometer ROS stream
-    if (baro_.enabled && magStreaming_)
+    if (baro_.enabled && !baroStreaming_)
     {
         ROS_INFO("Attempting to enable baro data stream.");
         baro_.pub = nh_.advertise<sensor_msgs::FluidPressure>("baro", 1);
@@ -392,6 +411,7 @@ void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
         ROS_INFO("Attempting to enable diagnostics data stream.");
         diagnostics_.pub = nh_.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 1);
         diagnostics_timer_ = nh_.createTimer(ros::Duration(0.5), &InertialSenseROS::diagnostics_callback, this); // 2 Hz
+    }
     }
 }
 
@@ -661,6 +681,9 @@ void InertialSenseROS::get_vector_flash_config(std::string param_name, uint32_t 
 
 void InertialSenseROS::flash_config_callback(const nvm_flash_cfg_t *const msg)
 {
+    if (!flashConfigStreaming_)
+        ROS_INFO("DID_FLASH_CONFIG response received.");
+    
     flashConfigStreaming_ = true;
     refLla_[0] = msg->refLla[0];
     refLla_[1] = msg->refLla[1];
@@ -670,6 +693,9 @@ void InertialSenseROS::flash_config_callback(const nvm_flash_cfg_t *const msg)
 
 void InertialSenseROS::INS1_callback(const ins_1_t *const msg)
 {
+    if (!ins1Streaming_)
+        ROS_INFO("DID_INS_1 response received.");
+    
     ins1Streaming_ = true;
     // Standard DID_INS_1 message
     if (DID_INS_1_.enabled)
@@ -698,6 +724,9 @@ void InertialSenseROS::INS1_callback(const ins_1_t *const msg)
 
 void InertialSenseROS::INS2_callback(const ins_2_t *const msg)
 {
+    if (!ins2Streaming_)
+        ROS_INFO("DID_INS_2 response received.");
+    
     ins2Streaming_ = true;
     if (DID_INS_2_.enabled)
     {
@@ -723,6 +752,9 @@ void InertialSenseROS::INS2_callback(const ins_2_t *const msg)
 
 void InertialSenseROS::INS4_callback(const ins_4_t *const msg)
 {
+    if (!ins4Streaming_)
+        ROS_INFO("DID_INS_4 response received.");
+    
     ins4Streaming_ = true;
     if (!refLLA_known)
     {
@@ -1017,6 +1049,8 @@ void InertialSenseROS::INS4_callback(const ins_4_t *const msg)
 
 void InertialSenseROS::INL2_states_callback(const inl2_states_t *const msg)
 {
+    if (!inl2StatesStreaming_)
+        ROS_INFO("DID_INL2_STATES response received");
     inl2StatesStreaming_ = true;
     inl2_states_msg.header.stamp = ros_time_from_tow(msg->timeOfWeek);
     inl2_states_msg.header.frame_id = frame_id_;
@@ -1055,6 +1089,8 @@ void InertialSenseROS::INL2_states_callback(const inl2_states_t *const msg)
 
 void InertialSenseROS::INS_covariance_callback(const ros_covariance_pose_twist_t *const msg)
 {
+    if (!insCovarianceStreaming_)
+        ROS_INFO("DID_ROS_COVARIANCE_POSE_TWIST response received");
     insCovarianceStreaming_ = true;
     float poseCovIn[36];
     int ind1, ind2;
@@ -1097,6 +1133,8 @@ void InertialSenseROS::INS_covariance_callback(const ros_covariance_pose_twist_t
 
 void InertialSenseROS::GPS_pos_callback(const gps_pos_t *const msg)
 {
+    if (!gpsPosStreaming_)
+        ROS_INFO("DID_GPS1_POS response received");
     gpsPosStreaming_ = true;
     GPS_week_ = msg->week;
     GPS_towOffset_ = msg->towOffset;
@@ -1158,6 +1196,8 @@ void InertialSenseROS::GPS_pos_callback(const gps_pos_t *const msg)
 
 void InertialSenseROS::GPS_vel_callback(const gps_vel_t *const msg)
 {
+    if (!gpsVelStreaming_)
+        ROS_INFO("DID_GPS1_VEL response received");
     gpsVelStreaming_ = true;
     if (GPS_.enabled && abs(GPS_towOffset_) > 0.001)
     {
@@ -1186,6 +1226,8 @@ void InertialSenseROS::update()
 
 void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t *const msg)
 {
+    if (!strobeInStreaming_)
+        ROS_INFO("DID_STROBE_IN_TIME response received");
     strobeInStreaming_ = true;
     // create the subscriber if it doesn't exist
     if (strobe_pub_.getTopic().empty())
@@ -1201,6 +1243,8 @@ void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t *const msg
 
 void InertialSenseROS::GPS_info_callback(const gps_sat_t *const msg)
 {
+    if (!gpsInfoStreaming_)
+        ROS_INFO("GPS INFO response received");
     gpsInfoStreaming_ = true;
     if (abs(GPS_towOffset_) < 0.001)
     { // Wait for valid msg->timeOfWeekMs
@@ -1220,6 +1264,8 @@ void InertialSenseROS::GPS_info_callback(const gps_sat_t *const msg)
 
 void InertialSenseROS::mag_callback(const magnetometer_t *const msg)
 {
+    if (!magStreaming_)
+        ROS_INFO("DID_MAGNETOMETER response received");
     magStreaming_ = true;
     sensor_msgs::MagneticField mag_msg;
     mag_msg.header.stamp = ros_time_from_start_time(msg->time);
@@ -1233,6 +1279,8 @@ void InertialSenseROS::mag_callback(const magnetometer_t *const msg)
 
 void InertialSenseROS::baro_callback(const barometer_t *const msg)
 {
+    if (!baroStreaming_)
+        ROS_INFO("DID_BAROMETER response received");
     baroStreaming_ = true;
     sensor_msgs::FluidPressure baro_msg;
     baro_msg.header.stamp = ros_time_from_start_time(msg->time);
@@ -1248,6 +1296,8 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
     
     if (preint_IMU_.enabled)
     {
+        if (!preintImuStreaming_)
+            ROS_INFO("DID_PREINTEGRATED_IMU response received");
         preintImuStreaming_ = true;
         preintIMU_msg.header.stamp = ros_time_from_start_time(msg->time);
         preintIMU_msg.header.frame_id = frame_id_;
@@ -1266,6 +1316,8 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
     
     if (IMU_.enabled)
     {
+        if (!imuStreaming_)
+            ROS_INFO("IMU response received");
         imuStreaming_ = true;
         imu_msg.header.stamp = ros_time_from_start_time(msg->time);
         imu_msg.header.frame_id = frame_id_;
@@ -1283,6 +1335,8 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
 
 void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t *const msg)
 {
+    if (!rtkMiscStreaming_)
+            ROS_INFO("DID_GPS1_RTK_POS_MISC response received");
     rtkMiscStreaming_ = true;
     if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
     {
@@ -1304,6 +1358,8 @@ void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t *const msg)
 
 void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
 {
+    if (!rtkRelStreaming_)
+            ROS_INFO("DID_GPS1_RTK_POS_REL response received");
     rtkRelStreaming_ = true;
     if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
     {
@@ -1351,6 +1407,8 @@ void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
 
 void InertialSenseROS::GPS_raw_callback(const gps_raw_t *const msg)
 {
+    if (!gpsRawStreaming_)
+        ROS_INFO("GPS Raw response received");
     gpsRawStreaming_ = true;
     switch (msg->dataType)
     {
@@ -1490,6 +1548,8 @@ void InertialSenseROS::GPS_geph_callback(const geph_t *const msg)
 
 void InertialSenseROS::diagnostics_callback(const ros::TimerEvent &event)
 {
+    if (!diagnosticsStreaming_)
+        ROS_INFO("Diagnostics response received");
     diagnosticsStreaming_ = true;
     // Create diagnostic objects
     diagnostic_msgs::DiagnosticArray diag_array;

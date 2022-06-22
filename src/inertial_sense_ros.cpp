@@ -22,10 +22,6 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
         load_params_srv();
     }
     connect();
-    if (configFlashParameters)
-    {
-        configure_flash_parameters();
-    }
 
     // Start Up ROS service servers
     refLLA_set_current_srv_ = nh_.advertiseService("set_refLLA_current", &InertialSenseROS::set_current_position_as_refLLA, this);
@@ -33,15 +29,17 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     mag_cal_srv_ = nh_.advertiseService("single_axis_mag_cal", &InertialSenseROS::perform_mag_cal_srv_callback, this);
     multi_mag_cal_srv_ = nh_.advertiseService("multi_axis_mag_cal", &InertialSenseROS::perform_multi_mag_cal_srv_callback, this);
     firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
-    //data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
+    data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
 
-    configure_flash_parameters();
-    IS_.StopBroadcasts(true);
+    IS_.StopBroadcasts(true);    
     configure_data_streams();
-    configure_rtk(); //TODO: Add checks for these
-    //data_stream_timer_          = nh_.createTimer(ros::Duration(0.5), configure_data_streams, this); // 2 Hz
-    
-    
+    configure_rtk();
+
+    if (configFlashParameters)
+    {   // Set uINS flash parameters after everything thing else so uINS flash write processor stall doesn't interfere. 
+        configure_flash_parameters();
+    }
+
     if (log_enabled_)
     {
         start_log();    // Start log should always happen last.

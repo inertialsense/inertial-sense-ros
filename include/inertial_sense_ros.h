@@ -85,7 +85,7 @@ public:
 
     
     void configure_data_streams();
-    // void configure_data_streams(const ros::TimerEvent& event);
+    void configure_data_streams(const ros::TimerEvent& event);
     void configure_ascii_output();
     void start_log();
 

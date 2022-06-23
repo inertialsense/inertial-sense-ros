@@ -163,254 +163,251 @@ void InertialSenseROS::load_params_srv()
 
 void InertialSenseROS::configure_data_streams(const ros::TimerEvent& event)
 {   
-    // while(1){
-    // if (flashConfigStreaming_&&\
-    //     ((DID_INS_1_.enabled && ins1Streaming_) || !DID_INS_1_.enabled) &&\
-    //     ((DID_INS_2_.enabled && ins2Streaming_) || !DID_INS_2_.enabled) &&\
-    //     ((DID_INS_4_.enabled && ins4Streaming_) || !DID_INS_4_.enabled) &&\
-    //     ((odom_ins_ned_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
-    //     ((odom_ins_ecef_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
-    //     ((odom_ins_enu_.enabled && ins4Streaming_ && imuStreaming_ && ((covariance_enabled_ && insCovarianceStreaming_) || !covariance_enabled_)) || !odom_ins_ned_.enabled) &&\
-    //     ((INL2_states_.enabled && inl2StatesStreaming_) || !INL2_states_.enabled) &&\
-    //     gpsPosStreaming_ &&\
-    //     gpsVelStreaming_ &&\
-    //     ((GPS_obs_.enabled && gpsRawStreaming_) || !GPS_obs_.enabled) &&\
-    //     ((GPS_info_.enabled && gpsInfoStreaming_) || !GPS_info_.enabled) &&\
-    //     ((mag_.enabled && magStreaming_) || !mag_.enabled) &&\
-    //     ((baro_.enabled && baroStreaming_) || !baro_.enabled) &&\
-    //     ((preint_IMU_.enabled && preintImuStreaming_) || !preint_IMU_.enabled) &&\
-    //     ((IMU_.enabled && imuStreaming_) || !IMU_.enabled) &&\
-    //     ((diagnostics_.enabled && diagnosticsStreaming_) || !diagnostics_.enabled)
-    //     )
-        
-    //     {data_stream_timer_.stop();
-    //     ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
-    //     return;
-    //     }
-    // ROS_INFO("Somethings not right still");
-    // if (!strobeInStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable strobe in data stream.");
-    //     SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback, 1); // we always want the strobe
-    //     strobeInStreaming_ = true;
-    // } 
-    // if (!flashConfigStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable flash config data stream.");
-    //     SET_CALLBACK(DID_FLASH_CONFIG, nvm_flash_cfg_t, flash_config_callback, 1000);
-    // }
+    if (!strobeInStreaming_)
+    {
+        ROS_INFO("Attempting to enable strobe in data stream.");
+        SET_CALLBACK(DID_STROBE_IN_TIME, strobe_in_time_t, strobe_in_time_callback, 1); // we always want the strobe
+        strobeInStreaming_ = true;
+        return;
+    } 
+    if (!flashConfigStreaming_)
+    {
+        ROS_INFO("Attempting to enable flash config data stream.");
+        SET_CALLBACK(DID_FLASH_CONFIG, nvm_flash_cfg_t, flash_config_callback, 1000);
+        return;
+    }
 
-    // if (DID_INS_1_.enabled && !ins1Streaming_)
-    // {
-    //     ROS_INFO("Attempting to enable INS1 data stream.");
-    //     DID_INS_1_.pub = nh_.advertise<inertial_sense_ros::DID_INS1>("DID_INS_1", 1);
-    //     SET_CALLBACK(DID_INS_1, ins_1_t, INS1_callback, 1);
-    // }
-    // if (DID_INS_2_.enabled && !ins2Streaming_)
-    // {
-    //     ROS_INFO("Attempting to enable INS2 data stream.");
-    //     DID_INS_2_.pub = nh_.advertise<inertial_sense_ros::DID_INS2>("DID_INS_2", 1);
-    //     SET_CALLBACK(DID_INS_2, ins_2_t, INS2_callback, 1);
-    // }
-    // if (DID_INS_4_.enabled && !ins4Streaming_)
-    // {
-    //     ROS_INFO("Attempting to enable INS4 data stream.");
-    //     DID_INS_4_.pub = nh_.advertise<inertial_sense_ros::DID_INS4>("DID_INS_4", 1);
-    //     SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);
-    // }
-    // if (odom_ins_ned_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
-    // {
-    //     ROS_INFO("Attempting to enable odom INS NED data stream.");
-    //     odom_ins_ned_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ned", 1);
-    //     SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need NED
-    //     if (covariance_enabled_)
-    //         SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-    //     SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                     // Need angular rate data from IMU
-    //     IMU_.enabled = true;
-    //     // Create Identity Matrix
-    //     //
-    //     for (int row = 0; row < 6; row++)
-    //     {
-    //         for (int col = 0; col < 6; col++)
-    //         {
-    //             if (row == col)
-    //             {
-    //                 ned_odom_msg.pose.covariance[row * 6 + col] = 1;
-    //                 ned_odom_msg.twist.covariance[row * 6 + col] = 1;
-    //             }
-    //             else
-    //             {
-    //                 ned_odom_msg.pose.covariance[row * 6 + col] = 0;
-    //                 ned_odom_msg.twist.covariance[row * 6 + col] = 0;
-    //             }
-    //         }
-    //     }
-    // }
+    if (DID_INS_1_.enabled && !ins1Streaming_)
+    {
+        ROS_INFO("Attempting to enable INS1 data stream.");
+        DID_INS_1_.pub = nh_.advertise<inertial_sense_ros::DID_INS1>("DID_INS_1", 1);
+        SET_CALLBACK(DID_INS_1, ins_1_t, INS1_callback, 1);
+        return;
+    }
+    if (DID_INS_2_.enabled && !ins2Streaming_)
+    {
+        ROS_INFO("Attempting to enable INS2 data stream.");
+        DID_INS_2_.pub = nh_.advertise<inertial_sense_ros::DID_INS2>("DID_INS_2", 1);
+        SET_CALLBACK(DID_INS_2, ins_2_t, INS2_callback, 1);
+        return;
+    }
+    if (DID_INS_4_.enabled && !ins4Streaming_)
+    {
+        ROS_INFO("Attempting to enable INS4 data stream.");
+        DID_INS_4_.pub = nh_.advertise<inertial_sense_ros::DID_INS4>("DID_INS_4", 1);
+        SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);
+        return;
+    }
+    if (odom_ins_ned_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    {
+        ROS_INFO("Attempting to enable odom INS NED data stream.");
+        odom_ins_ned_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ned", 1);
+        SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need NED
+        if (covariance_enabled_)
+            SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
+        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                     // Need angular rate data from IMU
+        IMU_.enabled = true;
+        // Create Identity Matrix
+        //
+        for (int row = 0; row < 6; row++)
+        {
+            for (int col = 0; col < 6; col++)
+            {
+                if (row == col)
+                {
+                    ned_odom_msg.pose.covariance[row * 6 + col] = 1;
+                    ned_odom_msg.twist.covariance[row * 6 + col] = 1;
+                }
+                else
+                {
+                    ned_odom_msg.pose.covariance[row * 6 + col] = 0;
+                    ned_odom_msg.twist.covariance[row * 6 + col] = 0;
+                }
+            }
+        }
+        return;
+    }
 
-    // if (odom_ins_ecef_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
-    // {
-    //     ROS_INFO("Attempting to enable odom INS ECEF data stream.");
-    //     odom_ins_ecef_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ecef", 1);
-    //     SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need quaternion and ecef
-    //     if (covariance_enabled_)
-    //         SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-    //     SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
-    //     IMU_.enabled = true;
-    //     // Create Identity Matrix
-    //     //
-    //     for (int row = 0; row < 6; row++)
-    //     {
-    //         for (int col = 0; col < 6; col++)
-    //         {
-    //             if (row == col)
-    //             {
-    //                 ecef_odom_msg.pose.covariance[row * 6 + col] = 1;
-    //                 ecef_odom_msg.twist.covariance[row * 6 + col] = 1;
-    //             }
-    //             else
-    //             {
-    //                 ecef_odom_msg.pose.covariance[row * 6 + col] = 0;
-    //                 ecef_odom_msg.twist.covariance[row * 6 + col] = 0;
-    //             }
-    //         }
-    //     }
-    // }
-    // if (odom_ins_enu_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
-    // {
-    //     ROS_INFO("Attempting to enable odom INS ENU data stream.");
-    //     odom_ins_enu_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_enu", 1);
-    //     SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need ENU
-    //     if (covariance_enabled_)
-    //         SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-    //     SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
-    //     IMU_.enabled = true;
-    //     // Create Identity Matrix
-    //     //
-    //     for (int row = 0; row < 6; row++)
-    //     {
-    //         for (int col = 0; col < 6; col++)
-    //         {
-    //             if (row == col)
-    //             {
-    //                 enu_odom_msg.pose.covariance[row * 6 + col] = 1;
-    //                 enu_odom_msg.twist.covariance[row * 6 + col] = 1;
-    //             }
-    //             else
-    //             {
-    //                 enu_odom_msg.pose.covariance[row * 6 + col] = 0;
-    //                 enu_odom_msg.twist.covariance[row * 6 + col] = 0;
-    //             }
-    //         }
-    //     }
-    // }
+    if (odom_ins_ecef_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    {
+        ROS_INFO("Attempting to enable odom INS ECEF data stream.");
+        odom_ins_ecef_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ecef", 1);
+        SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need quaternion and ecef
+        if (covariance_enabled_)
+            SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
+        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
+        IMU_.enabled = true;
+        // Create Identity Matrix
+        //
+        for (int row = 0; row < 6; row++)
+        {
+            for (int col = 0; col < 6; col++)
+            {
+                if (row == col)
+                {
+                    ecef_odom_msg.pose.covariance[row * 6 + col] = 1;
+                    ecef_odom_msg.twist.covariance[row * 6 + col] = 1;
+                }
+                else
+                {
+                    ecef_odom_msg.pose.covariance[row * 6 + col] = 0;
+                    ecef_odom_msg.twist.covariance[row * 6 + col] = 0;
+                }
+            }
+        }
+        return;
+    }
+    if (odom_ins_enu_.enabled && (!ins4Streaming_ || !imuStreaming_ || (covariance_enabled_ && !insCovarianceStreaming_)))
+    {
+        ROS_INFO("Attempting to enable odom INS ENU data stream.");
+        odom_ins_enu_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_enu", 1);
+        SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need ENU
+        if (covariance_enabled_)
+            SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
+        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
+        IMU_.enabled = true;
+        // Create Identity Matrix
+        //
+        for (int row = 0; row < 6; row++)
+        {
+            for (int col = 0; col < 6; col++)
+            {
+                if (row == col)
+                {
+                    enu_odom_msg.pose.covariance[row * 6 + col] = 1;
+                    enu_odom_msg.twist.covariance[row * 6 + col] = 1;
+                }
+                else
+                {
+                    enu_odom_msg.pose.covariance[row * 6 + col] = 0;
+                    enu_odom_msg.twist.covariance[row * 6 + col] = 0;
+                }
+            }
+        }
+        return;
+    }
 
-    // if (NavSatFix_.enabled)
-    // {
-    //     NavSatFix_.pub = nh_.advertise<sensor_msgs::NavSatFix>("NavSatFix", 1);
+    if (NavSatFix_.enabled)
+    {
+        NavSatFix_.pub = nh_.advertise<sensor_msgs::NavSatFix>("NavSatFix", 1);
 
-    //     // Satellite system constellation used in GNSS solution.  (see eGnssSatSigConst) 0x0003=GPS, 0x000C=QZSS, 0x0030=Galileo, 0x00C0=Beidou, 0x0300=GLONASS, 0x1000=SBAS
-    //     uint16_t gnssSatSigConst = IS_.GetFlashConfig().gnssSatSigConst;
+        // Satellite system constellation used in GNSS solution.  (see eGnssSatSigConst) 0x0003=GPS, 0x000C=QZSS, 0x0030=Galileo, 0x00C0=Beidou, 0x0300=GLONASS, 0x1000=SBAS
+        uint16_t gnssSatSigConst = IS_.GetFlashConfig().gnssSatSigConst;
 
-    //     if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GPS)
-    //     {
-    //         NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GPS;
-    //     }
-    //     if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GLO)
-    //     {
-    //         NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GLONASS;
-    //     }
-    //     if (gnssSatSigConst & GNSS_SAT_SIG_CONST_BDS)
-    //     {
-    //         NavSatFix_msg.status.service |= NavSatFixService::SERVICE_COMPASS; // includes BeiDou.
-    //     }
-    //     if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GAL)
-    //     {
-    //         NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GALILEO;
-    //     }
+        if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GPS)
+        {
+            NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GPS;
+        }
+        if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GLO)
+        {
+            NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GLONASS;
+        }
+        if (gnssSatSigConst & GNSS_SAT_SIG_CONST_BDS)
+        {
+            NavSatFix_msg.status.service |= NavSatFixService::SERVICE_COMPASS; // includes BeiDou.
+        }
+        if (gnssSatSigConst & GNSS_SAT_SIG_CONST_GAL)
+        {
+            NavSatFix_msg.status.service |= NavSatFixService::SERVICE_GALILEO;
+        }
 
-    //     // DID_GPS1_POS and DID_GPS1_VEL are always streamed for fix status. See below
-    // }
+        // DID_GPS1_POS and DID_GPS1_VEL are always streamed for fix status. See below
+        return;
+    }
 
-    // if (INL2_states_.enabled && !inl2StatesStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable INS2 States data stream.");
-    //     INL2_states_.pub = nh_.advertise<inertial_sense_ros::INL2States>("inl2_states", 1);
-    //     SET_CALLBACK(DID_INL2_STATES, inl2_states_t, INL2_states_callback, 1);
-    // }
+    if (INL2_states_.enabled && !inl2StatesStreaming_)
+    {
+        ROS_INFO("Attempting to enable INS2 States data stream.");
+        INL2_states_.pub = nh_.advertise<inertial_sense_ros::INL2States>("inl2_states", 1);
+        SET_CALLBACK(DID_INL2_STATES, inl2_states_t, INL2_states_callback, 1);
+        return;
+    }
 
-    // if (GPS_.enabled)
-    // {
-    //     GPS_.pub = nh_.advertise<inertial_sense_ros::GPS>("gps", 1);
-    // }
-    // // Set up the GPS ROS stream - we always need GPS information for time sync, just don't always need to publish it
-    // if (!gpsPosStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable GPS Pos data stream.");
-    //     SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS_pos_callback, 1); // we always need GPS for Fix status
-    // }
-    // if (!gpsVelStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable GPS Vel data stream.");
-    //     SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback, 1); // we always need GPS for Fix status
-    // }
-    // if (GPS_obs_.enabled)
-    // {
-    //     ROS_INFO("Attempting to enable GPS Obs data stream.");
-    //     GPS_obs_.pub = nh_.advertise<inertial_sense_ros::GNSSObsVec>("gps/obs", 50);
-    //     GPS_eph_.pub = nh_.advertise<inertial_sense_ros::GNSSEphemeris>("gps/eph", 50);
-    //     GPS_geph_.pub = nh_.advertise<inertial_sense_ros::GlonassEphemeris>("gps/geph", 50);
-    //     SET_CALLBACK(DID_GPS1_RAW, gps_raw_t, GPS_raw_callback, 1);
-    //     SET_CALLBACK(DID_GPS_BASE_RAW, gps_raw_t, GPS_raw_callback, 1);
-    //     SET_CALLBACK(DID_GPS2_RAW, gps_raw_t, GPS_raw_callback, 1);
-    //     obs_bundle_timer_ = nh_.createTimer(ros::Duration(0.001), InertialSenseROS::GPS_obs_bundle_timer_callback, this);
-    // }
+    if (GPS_.enabled)
+    {
+        GPS_.pub = nh_.advertise<inertial_sense_ros::GPS>("gps", 1);
+        return;
+    }
+    // Set up the GPS ROS stream - we always need GPS information for time sync, just don't always need to publish it
+    if (!gpsPosStreaming_)
+    {
+        ROS_INFO("Attempting to enable GPS Pos data stream.");
+        SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS_pos_callback, 1); // we always need GPS for Fix status
+        return;
+    }
+    if (!gpsVelStreaming_)
+    {
+        ROS_INFO("Attempting to enable GPS Vel data stream.");
+        SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback, 1); // we always need GPS for Fix status
+        return;
+    }
+    if (GPS_obs_.enabled)
+    {
+        ROS_INFO("Attempting to enable GPS Obs data stream.");
+        GPS_obs_.pub = nh_.advertise<inertial_sense_ros::GNSSObsVec>("gps/obs", 50);
+        GPS_eph_.pub = nh_.advertise<inertial_sense_ros::GNSSEphemeris>("gps/eph", 50);
+        GPS_geph_.pub = nh_.advertise<inertial_sense_ros::GlonassEphemeris>("gps/geph", 50);
+        SET_CALLBACK(DID_GPS1_RAW, gps_raw_t, GPS_raw_callback, 1);
+        SET_CALLBACK(DID_GPS_BASE_RAW, gps_raw_t, GPS_raw_callback, 1);
+        SET_CALLBACK(DID_GPS2_RAW, gps_raw_t, GPS_raw_callback, 1);
+        obs_bundle_timer_ = nh_.createTimer(ros::Duration(0.001), InertialSenseROS::GPS_obs_bundle_timer_callback, this);
+        return;
+    }
 
-    // // Set up the GPS info ROS stream
-    // if (GPS_info_.enabled && !gpsInfoStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable GPS Info data stream.");
-    //     GPS_info_.pub = nh_.advertise<inertial_sense_ros::GPSInfo>("gps/info", 1);
-    //     SET_CALLBACK(DID_GPS1_SAT, gps_sat_t, GPS_info_callback, 1);
-    // }
+    // Set up the GPS info ROS stream
+    if (GPS_info_.enabled && !gpsInfoStreaming_)
+    {
+        ROS_INFO("Attempting to enable GPS Info data stream.");
+        GPS_info_.pub = nh_.advertise<inertial_sense_ros::GPSInfo>("gps/info", 1);
+        SET_CALLBACK(DID_GPS1_SAT, gps_sat_t, GPS_info_callback, 1);
+        return;
+    }
 
-    // // Set up the magnetometer ROS stream
-    // if (mag_.enabled && !magStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable Mag data stream.");
-    //     mag_.pub = nh_.advertise<sensor_msgs::MagneticField>("mag", 1);
-    //     SET_CALLBACK(DID_MAGNETOMETER, magnetometer_t, mag_callback, 1);
-    // }
+    // Set up the magnetometer ROS stream
+    if (mag_.enabled && !magStreaming_)
+    {
+        ROS_INFO("Attempting to enable Mag data stream.");
+        mag_.pub = nh_.advertise<sensor_msgs::MagneticField>("mag", 1);
+        SET_CALLBACK(DID_MAGNETOMETER, magnetometer_t, mag_callback, 1);
+        return;
+    }
 
-    // // Set up the barometer ROS stream
-    // if (baro_.enabled && !baroStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable baro data stream.");
-    //     baro_.pub = nh_.advertise<sensor_msgs::FluidPressure>("baro", 1);
-    //     SET_CALLBACK(DID_BAROMETER, barometer_t, baro_callback, 1);
-    // }
+    // Set up the barometer ROS stream
+    if (baro_.enabled && !baroStreaming_)
+    {
+        ROS_INFO("Attempting to enable baro data stream.");
+        baro_.pub = nh_.advertise<sensor_msgs::FluidPressure>("baro", 1);
+        SET_CALLBACK(DID_BAROMETER, barometer_t, baro_callback, 1);
+        return;
+    }
 
-    // // Set up the preintegrated IMU (coning and sculling integral) ROS stream
-    // if (preint_IMU_.enabled && !preintImuStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable preint IMU data stream.");
-    //     preint_IMU_.pub = nh_.advertise<inertial_sense_ros::PreIntIMU>("preint_imu", 1);
-    //     SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
-    // }
-    // if(IMU_.enabled && !imuStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable IMU data stream.");
-    //     IMU_.pub = nh_.advertise<sensor_msgs::Imu>("imu", 1);
-    //     SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
-    // }
+    // Set up the preintegrated IMU (coning and sculling integral) ROS stream
+    if (preint_IMU_.enabled && !preintImuStreaming_)
+    {
+        ROS_INFO("Attempting to enable preint IMU data stream.");
+        preint_IMU_.pub = nh_.advertise<inertial_sense_ros::PreIntIMU>("preint_imu", 1);
+        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
+        return;
+    }
+    if(IMU_.enabled && !imuStreaming_)
+    {
+        ROS_INFO("Attempting to enable IMU data stream.");
+        IMU_.pub = nh_.advertise<sensor_msgs::Imu>("imu", 1);
+        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
+        return;
+    }
 
-    // // Set up ROS dianostics for rqt_robot_monitor
-    // if (diagnostics_.enabled && !diagnosticsStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable diagnostics data stream.");
-    //     diagnostics_.pub = nh_.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 1);
-    //     diagnostics_timer_ = nh_.createTimer(ros::Duration(0.5), &InertialSenseROS::diagnostics_callback, this); // 2 Hz
-    // }
-    // }
+    // Set up ROS dianostics for rqt_robot_monitor
+    if (diagnostics_.enabled && !diagnosticsStreaming_)
+    {
+        ROS_INFO("Attempting to enable diagnostics data stream.");
+        diagnostics_.pub = nh_.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 1);
+        diagnostics_timer_ = nh_.createTimer(ros::Duration(0.5), &InertialSenseROS::diagnostics_callback, this); // 2 Hz
+        return;
+    }
+    data_stream_timer_.stop();
+    ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
+    return;
 }
 
 void InertialSenseROS::configure_data_streams()

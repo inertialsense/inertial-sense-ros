@@ -1845,6 +1845,8 @@ bool InertialSenseROS::set_current_position_as_refLLA(std_srvs::Trigger::Request
         res.success = false;
         res.message = "Unable to update refLLA. Please try again.";
     }
+
+    return true;
 }
 
 bool InertialSenseROS::set_refLLA_to_value(inertial_sense_ros::refLLAUpdate::Request &req, inertial_sense_ros::refLLAUpdate::Response &res)
@@ -1877,6 +1879,8 @@ bool InertialSenseROS::set_refLLA_to_value(inertial_sense_ros::refLLAUpdate::Req
         res.success = false;
         res.message = "Unable to update refLLA. Please try again.";
     }
+
+    return true;
 }
 
 bool InertialSenseROS::perform_mag_cal_srv_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
@@ -1906,6 +1910,8 @@ bool InertialSenseROS::perform_mag_cal_srv_callback(std_srvs::Trigger::Request &
             }
         }
     }
+
+    return true;
 }
 
 bool InertialSenseROS::perform_multi_mag_cal_srv_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
@@ -1935,6 +1941,8 @@ bool InertialSenseROS::perform_multi_mag_cal_srv_callback(std_srvs::Trigger::Req
             }
         }
     }
+
+    return true;
 }
 
 void InertialSenseROS::reset_device()
@@ -1958,7 +1966,8 @@ bool InertialSenseROS::update_firmware_srv_callback(inertial_sense_ros::Firmware
     //     return false;
     //   }
     //   IS_.Open(port_.c_str(), baudrate_);
-    //   return true;
+    
+    return true;
 }
 
 ros::Time InertialSenseROS::ros_time_from_week_and_tow(const uint32_t week, const double timeOfWeek)

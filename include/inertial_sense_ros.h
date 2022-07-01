@@ -393,6 +393,6 @@ public:
     double refLla_[3] = {0, 0, 0};
     float magInclination_ = 0;
     float magDeclination_ = 0;
-    int insDynModel_ = DYN_AIRBORNE_4G;
+    int insDynModel_ = INS_DYN_MODEL_AIRBORNE_4G;
     bool refLLA_known = false;
 };

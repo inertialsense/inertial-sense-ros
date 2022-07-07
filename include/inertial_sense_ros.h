@@ -66,7 +66,7 @@ public:
         NMEA_SER1 = 0x02
     } NMEA_message_config_t;
 
-    InertialSenseROS(YAML::Node paramNode = YAML::Node(), bool configFlashParameters = true);
+    InertialSenseROS(YAML::Node paramNode = YAML::Node(YAML::NodeType::Undefined), bool configFlashParameters = true);
     void callback(p_data_t *data);
     void update();
 
@@ -97,7 +97,7 @@ public:
     void flash_config_callback(const nvm_flash_cfg_t *const msg);
     bool flashConfigStreaming_ = false;
     // Serial Port Configuration
-    std::string port_ = "/dev/ttyACM3";
+    std::string port_ = "/dev/ttyACM0";
     int baudrate_ = 921600;
     bool initialized_;
     bool log_enabled_ = false;
@@ -206,6 +206,7 @@ public:
     ros_stream_t diagnostics_;
     ros_stream_t GPS_;
     ros_stream_t NavSatFix_;
+    bool NavSatFixConfigured = false;
     ros_stream_t GPS_obs_;
     ros_stream_t GPS_eph_;
     ros_stream_t GPS_geph_;

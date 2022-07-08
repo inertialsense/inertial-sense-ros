@@ -1,7 +1,7 @@
   <launch>
 	<rosparam subst_value="True">
 
-    inertial_sense_node: { port: "/dev/ttyACM3",
+    inertial_sense_node: { port: "/dev/ttyACM0",
                            navigation_dt_ms: 4,
                            baudrate: 921600,
                            frame_id: "body",

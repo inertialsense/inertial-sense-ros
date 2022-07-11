@@ -7,6 +7,7 @@ int main(int argc, char**argv)
     if (argc > 1)
     {
         std::string paramYamlPath = argv[1];
+        std::cout << "\n\nLoading YAML paramfile: " << paramYamlPath << "\n\n";
         YAML::Node node;
         try
         {
@@ -16,8 +17,9 @@ int main(int argc, char**argv)
         catch (const YAML::BadFile &bf)
         {
             std::cout << "Loading file \"" << paramYamlPath << "\" failed.  Using default parameters.\n\n";
+            node = YAML::Node(YAML::NodeType::Undefined);
         }
-
+        
         thing = new InertialSenseROS(node);
     }
     else

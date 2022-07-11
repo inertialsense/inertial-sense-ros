@@ -1,5 +1,5 @@
 inertial_sense_ros:
-  port: "/dev/ttyACM3"
+  port: "/dev/ttyACM0"
   navigation_dt_ms: 4
   baudrate: 921600
   frame_id: "body"
@@ -42,7 +42,7 @@ inertial_sense_ros:
   # # every time we attempt to connect only try one time -->
   # RTK_connection_attempt_limit: 1
   GPS_type: "F9P"
-  RTK_rover: true
+  RTK_rover: false
   RTK_rover_radio_enable: false
   RTK_base: false
   dual_GNSS: false

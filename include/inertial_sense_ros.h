@@ -66,7 +66,7 @@ public:
         NMEA_SER1 = 0x02
     } NMEA_message_config_t;
 
-    InertialSenseROS(YAML::Node paramNode = YAML::Node(), bool configFlashParameters = true);
+    InertialSenseROS(YAML::Node paramNode = YAML::Node(YAML::NodeType::Undefined), bool configFlashParameters = true);
     void callback(p_data_t *data);
     void update();
 
@@ -83,7 +83,9 @@ public:
     void connect_rtk_client(const std::string &RTK_correction_protocol, const std::string &RTK_server_IP, const int RTK_server_port);
     void start_rtk_server(const std::string &RTK_server_IP, const int RTK_server_port);
 
+    
     void configure_data_streams();
+    void configure_data_streams(const ros::TimerEvent& event);
     void configure_ascii_output();
     void start_log();
 
@@ -93,8 +95,9 @@ public:
     void get_flash_config();
     void reset_device();
     void flash_config_callback(const nvm_flash_cfg_t *const msg);
+    bool flashConfigStreaming_ = false;
     // Serial Port Configuration
-    std::string port_ = "/dev/ttyACM3";
+    std::string port_ = "/dev/ttyACM0";
     int baudrate_ = 921600;
     bool initialized_;
     bool log_enabled_ = false;
@@ -127,9 +130,12 @@ public:
     ros::Publisher odom_ins_ned_pub_;
     ros::Publisher odom_ins_ecef_pub_;
     ros::Publisher odom_ins_enu_pub_;
-    inertial_sense_ros::GNSSObsVec obs_Vec_;
+    ros::Publisher strobe_pub_;
     ros::Timer obs_bundle_timer_;
     ros::Time last_obs_time_;
+    ros::Timer data_stream_timer_;
+    ros::Timer diagnostics_timer_;
+    inertial_sense_ros::GNSSObsVec obs_Vec_;
 
     bool rtk_connecting_ = false;
     int RTK_connection_attempt_limit_ = 1;
@@ -157,72 +163,72 @@ public:
     void stop_rtk_connectivity_watchdog_timer();
     void rtk_connectivity_watchdog_timer_callback(const ros::TimerEvent &timer_event);
 
-    ros_stream_t DID_INS_1_;
     void INS1_callback(const ins_1_t *const msg);
-
-    ros_stream_t DID_INS_2_;
     void INS2_callback(const ins_2_t *const msg);
-
-    ros_stream_t DID_INS_4_;
-    void INS4_callback(const ins_4_t *const msg);
-    
-    ros_stream_t INL2_states_;
+    void INS4_callback(const ins_4_t *const msg);    
     void INL2_states_callback(const inl2_states_t *const msg);
-
-    ros_stream_t DID_ROS_COVARIANCE_POSE_TWIST_;
     void INS_covariance_callback(const ros_covariance_pose_twist_t *const msg);
-
-    ros_stream_t odom_ins_ned_;
     void odom_ins_ned_callback(const ins_2_t *const msg);
-
-    ros_stream_t odom_ins_ecef_;
     void odom_ins_ecef_callback(const ins_2_t *const msg);
-
-    ros_stream_t odom_ins_enu_;
     void odom_ins_enu_callback(const ins_2_t *const msg);
-
-    ros_stream_t IMU_;
-
-    ros_stream_t GPS_info_;
     void GPS_info_callback(const gps_sat_t *const msg);
-
-    ros_stream_t mag_;
     void mag_callback(const magnetometer_t *const msg);
-
-    ros_stream_t baro_;
     void baro_callback(const barometer_t *const msg);
-
-    ros_stream_t preint_IMU_;
     void preint_IMU_callback(const preintegrated_imu_t *const msg);
-
-    ros::Publisher strobe_pub_;
     void strobe_in_time_callback(const strobe_in_time_t *const msg);
-
-    ros_stream_t diagnostics_;
     void diagnostics_callback(const ros::TimerEvent &event);
-    ros::Timer diagnostics_timer_;
+    void GPS_pos_callback(const gps_pos_t *const msg);    
+    void GPS_vel_callback(const gps_vel_t *const msg);    
+    void GPS_raw_callback(const gps_raw_t *const msg);
+    void GPS_obs_callback(const obsd_t *const msg, int nObs); 
+    void GPS_obs_bundle_timer_callback(const ros::TimerEvent &e);
+    void GPS_eph_callback(const eph_t *const msg);
+    void GPS_geph_callback(const geph_t *const msg);
+    void RTK_Misc_callback(const gps_rtk_misc_t *const msg);
+    void RTK_Rel_callback(const gps_rtk_rel_t *const msg);
+
     float diagnostic_ar_ratio_, diagnostic_differential_age_, diagnostic_heading_base_to_rover_;
     uint diagnostic_fix_type_;
 
+    ros_stream_t DID_INS_1_;
+    ros_stream_t DID_INS_2_;
+    ros_stream_t DID_INS_4_;
+    ros_stream_t INL2_states_;
+    ros_stream_t DID_ROS_COVARIANCE_POSE_TWIST_;
+    ros_stream_t odom_ins_ned_;
+    ros_stream_t odom_ins_ecef_;
+    ros_stream_t odom_ins_enu_;
+    ros_stream_t IMU_;
+    ros_stream_t GPS_info_;
+    ros_stream_t mag_;
+    ros_stream_t baro_;
+    ros_stream_t preint_IMU_;
+    ros_stream_t diagnostics_;
     ros_stream_t GPS_;
     ros_stream_t NavSatFix_;
-    void GPS_pos_callback(const gps_pos_t *const msg);
-    void GPS_vel_callback(const gps_vel_t *const msg);
-    void GPS_raw_callback(const gps_raw_t *const msg);
-
+    bool NavSatFixConfigured = false;
     ros_stream_t GPS_obs_;
-    void GPS_obs_callback(const obsd_t *const msg, int nObs);
-    void GPS_obs_bundle_timer_callback(const ros::TimerEvent &e);
-
     ros_stream_t GPS_eph_;
-    void GPS_eph_callback(const eph_t *const msg);
-
     ros_stream_t GPS_geph_;
-    void GPS_geph_callback(const geph_t *const msg);
-
     ros_stream_t RTK_;
-    void RTK_Misc_callback(const gps_rtk_misc_t *const msg);
-    void RTK_Rel_callback(const gps_rtk_rel_t *const msg);
+
+    bool ins1Streaming_ = false;
+    bool ins2Streaming_ = false;
+    bool ins4Streaming_ = false;
+    bool inl2StatesStreaming_ = false;
+    bool insCovarianceStreaming_ = false;
+    bool gpsInfoStreaming_ = false;
+    bool magStreaming_ = false;
+    bool baroStreaming_ = false;
+    bool preintImuStreaming_ = false;
+    bool imuStreaming_ = false;
+    bool strobeInStreaming_ = false;
+    bool diagnosticsStreaming_ = false;
+    bool gpsPosStreaming_ = false;
+    bool gpsVelStreaming_ = false;
+    bool gpsRawStreaming_ = false;
+    bool rtkMiscStreaming_ = false;
+    bool rtkRelStreaming_ = false;
 
     // Services
     ros::ServiceServer mag_cal_srv_;

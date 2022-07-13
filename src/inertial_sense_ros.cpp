@@ -194,21 +194,18 @@ void InertialSenseROS::configure_data_streams()
     if (DID_INS_1_.enabled && !ins1Streaming_)
     {
         ROS_INFO("Attempting to enable INS1 data stream.");
-        DID_INS_1_.pub = nh_.advertise<inertial_sense_ros::DID_INS1>("DID_INS_1", 1);
         SET_CALLBACK(DID_INS_1, ins_1_t, INS1_callback, 1);
         return;
     }
     if (DID_INS_2_.enabled && !ins2Streaming_)
     {
         ROS_INFO("Attempting to enable INS2 data stream.");
-        DID_INS_2_.pub = nh_.advertise<inertial_sense_ros::DID_INS2>("DID_INS_2", 1);
         SET_CALLBACK(DID_INS_2, ins_2_t, INS2_callback, 1);
         return;
     }
     if (DID_INS_4_.enabled && !ins4Streaming_)
     {
         ROS_INFO("Attempting to enable INS4 data stream.");
-        DID_INS_4_.pub = nh_.advertise<inertial_sense_ros::DID_INS4>("DID_INS_4", 1);
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);
         return;
     }
@@ -219,7 +216,7 @@ void InertialSenseROS::configure_data_streams()
     if (odom_ins_ned_.enabled && !(ins4Streaming_ && imuStreaming_ && covarianceConfiged))
     {
         ROS_INFO("Attempting to enable odom INS NED data stream.");
-        odom_ins_ned_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ned", 1);
+        
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need NED
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
@@ -249,7 +246,6 @@ void InertialSenseROS::configure_data_streams()
     if (odom_ins_ecef_.enabled && !(ins4Streaming_ && imuStreaming_ && covarianceConfiged))
     {
         ROS_INFO("Attempting to enable odom INS ECEF data stream.");
-        odom_ins_ecef_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ecef", 1);
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need quaternion and ecef
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
@@ -279,7 +275,6 @@ void InertialSenseROS::configure_data_streams()
     if (odom_ins_enu_.enabled  && !(ins4Streaming_ && imuStreaming_ && covarianceConfiged))
     {
         ROS_INFO("Attempting to enable odom INS ENU data stream.");
-        odom_ins_enu_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_enu", 1);
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need ENU
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
@@ -338,7 +333,6 @@ void InertialSenseROS::configure_data_streams()
     if (INL2_states_.enabled && !inl2StatesStreaming_)
     {
         ROS_INFO("Attempting to enable INS2 States data stream.");
-        INL2_states_.pub = nh_.advertise<inertial_sense_ros::INL2States>("inl2_states", 1);
         SET_CALLBACK(DID_INL2_STATES, inl2_states_t, INL2_states_callback, 1);
         return;
     }
@@ -348,13 +342,13 @@ void InertialSenseROS::configure_data_streams()
         GPS_.pub = nh_.advertise<inertial_sense_ros::GPS>("gps", 1);
     }
     // Set up the GPS ROS stream - we always need GPS information for time sync, just don't always need to publish it
-    if (GPS_.enabled && !gpsPosStreaming_)
+    if (!gpsPosStreaming_)
     {
         ROS_INFO("Attempting to enable GPS Pos data stream.");
         SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS_pos_callback, 1); // we always need GPS for Fix status
         return;
     }
-    if (GPS_.enabled && !gpsVelStreaming_)
+    if (!gpsVelStreaming_)
     {
         ROS_INFO("Attempting to enable GPS Vel data stream.");
         SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback, 1); // we always need GPS for Fix status
@@ -377,7 +371,6 @@ void InertialSenseROS::configure_data_streams()
     if (GPS_info_.enabled && !gpsInfoStreaming_)
     {
         ROS_INFO("Attempting to enable GPS Info data stream.");
-        GPS_info_.pub = nh_.advertise<inertial_sense_ros::GPSInfo>("gps/info", 1);
         SET_CALLBACK(DID_GPS1_SAT, gps_sat_t, GPS_info_callback, 1);
         return;
     }
@@ -386,7 +379,6 @@ void InertialSenseROS::configure_data_streams()
     if (mag_.enabled && !magStreaming_)
     {
         ROS_INFO("Attempting to enable Mag data stream.");
-        mag_.pub = nh_.advertise<sensor_msgs::MagneticField>("mag", 1);
         SET_CALLBACK(DID_MAGNETOMETER, magnetometer_t, mag_callback, 1);
         return;
     }
@@ -395,7 +387,6 @@ void InertialSenseROS::configure_data_streams()
     if (baro_.enabled && !baroStreaming_)
     {
         ROS_INFO("Attempting to enable baro data stream.");
-        baro_.pub = nh_.advertise<sensor_msgs::FluidPressure>("baro", 1);
         SET_CALLBACK(DID_BAROMETER, barometer_t, baro_callback, 1);
         return;
     }
@@ -404,27 +395,16 @@ void InertialSenseROS::configure_data_streams()
     if (preint_IMU_.enabled && !preintImuStreaming_)
     {
         ROS_INFO("Attempting to enable preint IMU data stream.");
-        preint_IMU_.pub = nh_.advertise<inertial_sense_ros::PreIntIMU>("preint_imu", 1);
         SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
         return;
     }
     if(IMU_.enabled && !imuStreaming_)
     {
         ROS_INFO("Attempting to enable IMU data stream.");
-        IMU_.pub = nh_.advertise<sensor_msgs::Imu>("imu", 1);
         SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
         return;
     }
 
-    // Set up ROS dianostics for rqt_robot_monitor
-    // if (diagnostics_.enabled && !diagnosticsStreaming_)
-    // {
-    //     ROS_INFO("Attempting to enable diagnostics data stream.");
-        
-    //     ROS_INFO("\nCreate Timer\n\n");
-    //     //diagnostics_timer_ = nh_.createTimer(ros::Duration(0.5), &InertialSenseROS::diagnostics_callback, this); // 2 Hz
-    //     return;
-    // }
     data_stream_timer_.stop();
     ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
     return;
@@ -711,6 +691,11 @@ void InertialSenseROS::INS1_callback(const ins_1_t *const msg)
     if (!ins1Streaming_)
     {
         ROS_INFO("DID_INS_1 response received.");
+        if (DID_INS_1_.enabled)
+        {
+            DID_INS_1_.pub = nh_.advertise<inertial_sense_ros::DID_INS1>("DID_INS_1", 1);
+        }
+        
     }
     
     ins1Streaming_ = true;
@@ -742,7 +727,11 @@ void InertialSenseROS::INS1_callback(const ins_1_t *const msg)
 void InertialSenseROS::INS2_callback(const ins_2_t *const msg)
 {
     if (!ins2Streaming_)
+    {
         ROS_INFO("DID_INS_2 response received.");
+        if (DID_INS_2_.enabled)
+            DID_INS_2_.pub = nh_.advertise<inertial_sense_ros::DID_INS2>("DID_INS_2", 1);
+    }
     
     ins2Streaming_ = true;
     if (DID_INS_2_.enabled)
@@ -770,7 +759,20 @@ void InertialSenseROS::INS2_callback(const ins_2_t *const msg)
 void InertialSenseROS::INS4_callback(const ins_4_t *const msg)
 {
     if (!ins4Streaming_)
+    {
         ROS_INFO("DID_INS_4 response received.");
+        if (DID_INS_4_.enabled)
+            DID_INS_4_.pub = nh_.advertise<inertial_sense_ros::DID_INS4>("DID_INS_4", 1);
+        
+        if (odom_ins_ned_.enabled)
+            odom_ins_ned_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ned", 1);
+
+        if (odom_ins_enu_.enabled)
+            odom_ins_enu_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_enu", 1);
+
+        if ( odom_ins_ecef_.enabled)    
+            odom_ins_ecef_.pub = nh_.advertise<nav_msgs::Odometry>("odom_ins_ecef", 1);
+    }
     
     ins4Streaming_ = true;
     if (!refLLA_known)
@@ -798,6 +800,7 @@ void InertialSenseROS::INS4_callback(const ins_4_t *const msg)
         did_ins_4_msg.ecef[2] = msg->ecef[2];
         DID_INS_4_.pub.publish(did_ins_4_msg);
     }
+
 
     if (odom_ins_ned_.enabled || odom_ins_enu_.enabled || odom_ins_ecef_.enabled)
     {
@@ -1067,7 +1070,11 @@ void InertialSenseROS::INS4_callback(const ins_4_t *const msg)
 void InertialSenseROS::INL2_states_callback(const inl2_states_t *const msg)
 {
     if (!inl2StatesStreaming_)
+    {
         ROS_INFO("DID_INL2_STATES response received");
+        if (INL2_states_.enabled)
+            INL2_states_.pub = nh_.advertise<inertial_sense_ros::INL2States>("inl2_states", 1);
+    }
     inl2StatesStreaming_ = true;
     inl2_states_msg.header.stamp = ros_time_from_tow(msg->timeOfWeek);
     inl2_states_msg.header.frame_id = frame_id_;
@@ -1261,7 +1268,12 @@ void InertialSenseROS::strobe_in_time_callback(const strobe_in_time_t *const msg
 void InertialSenseROS::GPS_info_callback(const gps_sat_t *const msg)
 {
     if (!gpsInfoStreaming_)
+    {
         ROS_INFO("GPS INFO response received");
+        if (GPS_info_.enabled)
+            GPS_info_.pub = nh_.advertise<inertial_sense_ros::GPSInfo>("gps/info", 1);
+    }
+        
     gpsInfoStreaming_ = true;
     if (abs(GPS_towOffset_) < 0.001)
     { // Wait for valid msg->timeOfWeekMs
@@ -1282,7 +1294,11 @@ void InertialSenseROS::GPS_info_callback(const gps_sat_t *const msg)
 void InertialSenseROS::mag_callback(const magnetometer_t *const msg)
 {
     if (!magStreaming_)
+    {
         ROS_INFO("DID_MAGNETOMETER response received");
+        if (mag_.enabled)
+            mag_.pub = nh_.advertise<sensor_msgs::MagneticField>("mag", 1);
+    }
     magStreaming_ = true;
     sensor_msgs::MagneticField mag_msg;
     mag_msg.header.stamp = ros_time_from_start_time(msg->time);
@@ -1297,7 +1313,12 @@ void InertialSenseROS::mag_callback(const magnetometer_t *const msg)
 void InertialSenseROS::baro_callback(const barometer_t *const msg)
 {
     if (!baroStreaming_)
+    {
         ROS_INFO("DID_BAROMETER response received");
+        if (baro_.enabled)
+            baro_.pub = nh_.advertise<sensor_msgs::FluidPressure>("baro", 1);
+    }
+    
     baroStreaming_ = true;
     sensor_msgs::FluidPressure baro_msg;
     baro_msg.header.stamp = ros_time_from_start_time(msg->time);
@@ -1314,7 +1335,10 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
     if (preint_IMU_.enabled)
     {
         if (!preintImuStreaming_)
+        {
             ROS_INFO("DID_PREINTEGRATED_IMU response received");
+            preint_IMU_.pub = nh_.advertise<inertial_sense_ros::PreIntIMU>("preint_imu", 1);
+        }
         preintImuStreaming_ = true;
         preintIMU_msg.header.stamp = ros_time_from_start_time(msg->time);
         preintIMU_msg.header.frame_id = frame_id_;
@@ -1334,7 +1358,10 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
     if (IMU_.enabled)
     {
         if (!imuStreaming_)
+        {
             ROS_INFO("IMU response received");
+            IMU_.pub = nh_.advertise<sensor_msgs::Imu>("imu", 1);
+        }
         imuStreaming_ = true;
         imu_msg.header.stamp = ros_time_from_start_time(msg->time);
         imu_msg.header.frame_id = frame_id_;

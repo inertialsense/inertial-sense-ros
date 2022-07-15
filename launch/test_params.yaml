@@ -22,7 +22,8 @@ inertial_sense_ros:
   stream_diagnostics: false
   publishTf: true
   enable_log: false
-  ioConfig: 39624800  #F9P RUG2 RTK CMP: 0x025ca060
+  ioConfig: 40673376  #F9P EVB2 RTK CMP: 0x025ca060
+  # ioConfig: 41056
   #RTK_server_mount: ""
   #RTK_server_username: ""
   #RTK_server_password: ""
@@ -45,9 +46,10 @@ inertial_sense_ros:
   GPS_type: "F9P"
   RTK_rover: true
   RTK_rover_radio_enable: false
-  RTK_base_USB: true
-  RTK_base_serial: true
-  dual_GNSS: true
+  RTK_base_USB: false
+  RTK_base_serial: false
+  RTK_base_TCP: false
+  dual_GNSS: false
   inclination: 0
   declination: 0
   dynamic_model: 8

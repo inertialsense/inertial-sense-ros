@@ -154,6 +154,7 @@ public:
     bool RTK_rover_radio_enable_ = false;
     bool RTK_base_USB_ = false;
     bool RTK_base_serial_ = false;
+    bool RTK_base_TCP_ = false;
     bool dual_GNSS_ = false;
     
     std::string gps_type_ = "F9P";
@@ -368,5 +369,5 @@ public:
     float magDeclination_ = 0;
     int insDynModel_ = INS_DYN_MODEL_AIRBORNE_4G;
     bool refLLA_known = false;
-    uint32_t ioConfig_ = 39624800; //F9P RUG2 RTK CMP: 0x025ca060
+    int ioConfig_ = 39624800; //F9P RUG2 RTK CMP: 0x025ca060
 };

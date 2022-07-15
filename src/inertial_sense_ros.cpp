@@ -84,6 +84,7 @@ void InertialSenseROS::load_params_yaml(YAML::Node node)
     get_node_param_yaml(node, "stream_diagnostics", diagnostics_.enabled);
     get_node_param_yaml(node, "publishTf", publishTf_);
     get_node_param_yaml(node, "enable_log", log_enabled_);
+    get_node_param_yaml(node, "ioConfig", ioConfig_);
     get_node_param_yaml(node, "RTK_server_mount", RTK_server_mount_);
     get_node_param_yaml(node, "RTK_server_username", RTK_server_username_);
     get_node_param_yaml(node, "RTK_server_password", RTK_server_password_);
@@ -101,6 +102,7 @@ void InertialSenseROS::load_params_yaml(YAML::Node node)
     get_node_param_yaml(node, "RTK_rover_radio_enable", RTK_rover_radio_enable_);
     get_node_param_yaml(node, "RTK_base_USB", RTK_base_USB_);
     get_node_param_yaml(node, "RTK_base_serial", RTK_base_serial_);
+    get_node_param_yaml(node, "RTK_base_TCP", RTK_base_TCP_);
     get_node_param_yaml(node, "dual_GNSS", dual_GNSS_);
     get_node_param_yaml(node, "inclination", magInclination_);
     get_node_param_yaml(node, "declination", magDeclination_);
@@ -141,6 +143,7 @@ void InertialSenseROS::load_params_srv()
     nh_private_.getParam("stream_preint_IMU", preint_IMU_.enabled);
     nh_private_.getParam("stream_diagnostics", diagnostics_.enabled);
     nh_private_.getParam("publishTf", publishTf_);
+    nh_private_.getParam("ioConfig", ioConfig_);
     nh_private_.getParam("enable_log", log_enabled_);
     nh_private_.getParam("RTK_server_mount", RTK_server_mount_);
     nh_private_.getParam("RTK_server_username", RTK_server_username_);
@@ -159,6 +162,7 @@ void InertialSenseROS::load_params_srv()
     nh_private_.getParam("RTK_rover_radio_enable", RTK_rover_radio_enable_);
     nh_private_.getParam("RTK_base_USB", RTK_base_USB_);
     nh_private_.getParam("RTK_base_serial", RTK_base_serial_);
+    nh_private_.getParam("RTK_base_TCP", RTK_base_TCP_);
     nh_private_.getParam("dual_GNSS", dual_GNSS_);
     nh_private_.getParam("inclination", magInclination_);
     nh_private_.getParam("declination", magDeclination_);
@@ -472,7 +476,7 @@ void InertialSenseROS::configure_flash_parameters()
 {
     bool reboot = false;
     nvm_flash_cfg_t current_flash_cfg = IS_.GetFlashConfig();
-    ROS_INFO("Configuring flash: \nCurrent: %i, \nDesired: %i\n, current_flash_cfg.ioConfig, ioConfig_");
+    //ROS_INFO("Configuring flash: \nCurrent: %i, \nDesired: %i\n", current_flash_cfg.ioConfig, ioConfig_);
 
     if (current_flash_cfg.startupNavDtMs != navigation_dt_ms_)
     {
@@ -636,6 +640,7 @@ void InertialSenseROS::configure_rtk()
         if (RTK_rover_)
         {
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL;
+            RTK_.enabled = true;
             ROS_INFO("InertialSense: RTK Rover Configured.");
             connect_rtk_client(RTK_correction_protocol_, RTK_server_IP_, RTK_server_port_);
 
@@ -648,6 +653,7 @@ void InertialSenseROS::configure_rtk()
         }
         if (dual_GNSS_)
         {
+            RTK_.enabled = true;
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_COMPASSING_F9P;
             SET_CALLBACK(DID_GPS2_RTK_CMP_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS2_RTK_CMP_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
@@ -657,6 +663,7 @@ void InertialSenseROS::configure_rtk()
         }
         if (RTK_rover_radio_enable_)
         {
+            RTK_.enabled = true;
             RTK_base_USB_ = RTK_base_USB_= false;
             RTK_base_serial_ = RTK_base_serial_= false;
             ROS_INFO("InertialSense: Configured as RTK Rover with radio enabled");
@@ -676,7 +683,7 @@ void InertialSenseROS::configure_rtk()
             ROS_INFO("InertialSense: Base Configured.");
             RTKCfgBits |= RTK_CFG_BITS_BASE_OUTPUT_GPS1_RTCM3_SER2;
         }
-        if (RTK_base_USB_ || RTK_base_serial_)
+        if (RTK_base_TCP_)
         {
             start_rtk_server(RTK_server_IP_, RTK_server_port_);
         }
@@ -687,7 +694,7 @@ void InertialSenseROS::configure_rtk()
     else
     {
 
-        ROS_ERROR_COND(RTK_rover_ && (RTK_base_serial_ || RTK_base_USB_), "unable to configure onboard receiver to be both RTK rover and base - default to rover");
+        ROS_ERROR_COND(RTK_rover_ && (RTK_base_serial_ || RTK_base_USB_ || RTK_base_TCP_), "unable to configure onboard receiver to be both RTK rover and base - default to rover");
         ROS_ERROR_COND(RTK_rover_ && dual_GNSS_, "unable to configure onboard receiver to be both RTK rover as dual GNSS - default to dual GNSS");
 
         uint32_t RTKCfgBits = 0;
@@ -707,6 +714,7 @@ void InertialSenseROS::configure_rtk()
         {
             RTK_base_serial_ = false;
             RTK_base_USB_ = false;
+            RTK_base_TCP_ = false;
             ROS_INFO("InertialSense: Configured as RTK Rover with radio enabled");
 
             RTKCfgBits |= (gps_type_ == "F9P" ? RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL : RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING);
@@ -720,6 +728,7 @@ void InertialSenseROS::configure_rtk()
         {
             RTK_base_serial_ = false;
             RTK_base_USB_ = false;
+            RTK_base_TCP_ = false;
 
             ROS_INFO("InertialSense: Configured as RTK Rover");
 
@@ -734,13 +743,15 @@ void InertialSenseROS::configure_rtk()
 
             start_rtk_connectivity_watchdog_timer();
         }
-        else if (RTK_base_USB_ || RTK_base_serial_)
+        else if (RTK_base_USB_ || RTK_base_serial_ || RTK_base_TCP_)
         {
             ROS_INFO("InertialSense: Configured as RTK Base");
-
-            RTKCfgBits |= RTK_CFG_BITS_BASE_OUTPUT_GPS1_UBLOX_SER0;
-
-            start_rtk_server(RTK_server_IP_, RTK_server_port_);
+            if (RTK_base_serial_)
+                RTKCfgBits |= RTK_CFG_BITS_BASE_OUTPUT_GPS1_UBLOX_SER0;
+            if (RTK_base_USB_)
+                RTKCfgBits |= RTK_CFG_BITS_BASE_OUTPUT_GPS1_UBLOX_USB;
+            if (RTK_base_TCP_)
+                start_rtk_server(RTK_server_IP_, RTK_server_port_);
         }
         IS_.SendData(DID_FLASH_CONFIG, reinterpret_cast<uint8_t *>(&RTKCfgBits), sizeof(RTKCfgBits), offsetof(nvm_flash_cfg_t, RTKCfgBits));
     }

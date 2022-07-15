@@ -83,8 +83,7 @@ public:
     void connect_rtk_client(const std::string &RTK_correction_protocol, const std::string &RTK_server_IP, const int RTK_server_port);
     void start_rtk_server(const std::string &RTK_server_IP, const int RTK_server_port);
 
-    
-    void configure_data_streams();
+    void configure_data_streams(bool startup);
     void configure_data_streams(const ros::TimerEvent& event);
     void configure_ascii_output();
     void start_log();
@@ -153,7 +152,8 @@ public:
     int RTK_server_port_ = 7777;
     bool RTK_rover_ = false;
     bool RTK_rover_radio_enable_ = false;
-    bool RTK_base_ = false;
+    bool RTK_base_USB_ = false;
+    bool RTK_base_serial_ = false;
     bool dual_GNSS_ = false;
     
     std::string gps_type_ = "F9P";
@@ -243,15 +243,6 @@ public:
     bool update_firmware_srv_callback(inertial_sense_ros::FirmwareUpdate::Request &req, inertial_sense_ros::FirmwareUpdate::Response &res);
 
     void publishGPS();
-
-    typedef enum
-    {
-        RTK_NONE,
-        RTK_ROVER,
-        RTK_BASE,
-        DUAL_GNSS
-    } rtk_state_t;
-    rtk_state_t RTK_state_ = RTK_NONE;
 
     enum PositionCovarianceType
     {
@@ -377,4 +368,5 @@ public:
     float magDeclination_ = 0;
     int insDynModel_ = INS_DYN_MODEL_AIRBORNE_4G;
     bool refLLA_known = false;
+    uint32_t ioConfig_ = 39624800; //F9P RUG2 RTK CMP: 0x025ca060
 };

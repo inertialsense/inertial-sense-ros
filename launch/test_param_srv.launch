@@ -24,6 +24,9 @@
                            stream_diagnostics: false,
                            publishTf: true,
                            enable_log: false,
+                           <!-- F9P RUG2 RTK CMP ioConfig: 0x025ca060-->
+                           <!-- ioConfig: 39624800, -->
+                           ioConfig: 41056,
                            <!-- RTK_server_mount: "", -->
                            <!-- RTK_server_username: "", -->
                            <!-- RTK_server_password: "", -->
@@ -39,14 +42,15 @@
                            RTK_data_transmission_interruption_limit: 5,
                            RTK_correction_protocol: "RTCM3",
                             <!-- # TCP - Inertial Sense, -->
-                            RTK_server_IP: "127.0.0.1",
+                            RTK_server_IP: "66.219.246.93",
                             RTK_server_port: 7777,
                             <!-- # Every time we attempt to connect only try one time -->
                             <!-- RTK_connection_attempt_limit: 1, -->
                            GPS_type: "F9P",
                            RTK_rover: true,
                            RTK_rover_radio_enable: false,
-                           RTK_base: false,
+                           RTK_base_USB: false,
+                           RTK_base_serial: false,
                            dual_GNSS: false,
                            inclination: 0,
                            declination: 0,

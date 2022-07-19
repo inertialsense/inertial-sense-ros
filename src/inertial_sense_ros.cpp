@@ -31,7 +31,7 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     mag_cal_srv_ = nh_.advertiseService("single_axis_mag_cal", &InertialSenseROS::perform_mag_cal_srv_callback, this);
     multi_mag_cal_srv_ = nh_.advertiseService("multi_axis_mag_cal", &InertialSenseROS::perform_multi_mag_cal_srv_callback, this);
     firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
-    data_stream_timer_          = nh_.createTimer(ros::Duration(0.125), configure_data_streams, this); // 2 Hz
+    data_stream_timer_          = nh_.createTimer(ros::Duration(1), configure_data_streams, this); // 2 Hz
     if (diagnostics_.enabled)
     {
         diagnostics_.pub = nh_.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 1);
@@ -40,10 +40,11 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     
     IS_.StopBroadcasts(true);
     configure_data_streams(true);
-    configure_rtk(); //TODO: Add checks for these
+    configure_rtk(); 
+    IS_.SavePersistent();
 
     if (configFlashParameters)
-    {   // Set uINS flash parameters after everything thing else so uINS flash write processor stall doesn't interfere. 
+    {   // Set uINS flash parameters after everything thing else so uINS flash write processor stall doesn't interfere.
         configure_flash_parameters();
     }
 
@@ -784,6 +785,7 @@ void InertialSenseROS::flash_config_callback(const nvm_flash_cfg_t *const msg)
     refLla_[1] = msg->refLla[1];
     refLla_[2] = msg->refLla[2];
     refLLA_known = true;
+    ROS_INFO("refLla was set");
 }
 
 void InertialSenseROS::INS1_callback(const ins_1_t *const msg)
@@ -1912,7 +1914,8 @@ void InertialSenseROS::reset_device()
     reset_command.command = 99;
     reset_command.invCommand = ~reset_command.command;
     IS_.SendData(DID_SYS_CMD, reinterpret_cast<uint8_t *>(&reset_command), sizeof(system_command_t), 0);
-    sleep(1);
+    ROS_WARN("Device reset required.\n\nShutting down Node.\n");
+    ros::shutdown();
 }
 
 bool InertialSenseROS::update_firmware_srv_callback(inertial_sense_ros::FirmwareUpdate::Request &req, inertial_sense_ros::FirmwareUpdate::Response &res)

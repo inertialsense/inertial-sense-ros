@@ -357,45 +357,45 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
     if (GPS_.enabled)
     {
         GPS_.pub = nh_.advertise<inertial_sense_ros::GPS>("gps", 1);
-    }
-    // Set up the GPS ROS stream - we always need GPS information for time sync, just don't always need to publish it
-    if (!gpsPosStreaming_)
-    {
-        ROS_INFO("Attempting to enable GPS Pos data stream.");
-        SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS_pos_callback, 1); // we always need GPS for Fix status
-        if (!startup)
-            return;
-    }
-    if (!gpsVelStreaming_)
-    {
-        ROS_INFO("Attempting to enable GPS Vel data stream.");
-        SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback, 1); // we always need GPS for Fix status
-        if (!startup)
-            return;
-    }
-    if (GPS_obs_.enabled && !gpsRawStreaming_)
-    {
-        ROS_INFO("Attempting to enable GPS Obs data stream.");
-        GPS_obs_.pub = nh_.advertise<inertial_sense_ros::GNSSObsVec>("gps/obs", 50);
-        GPS_eph_.pub = nh_.advertise<inertial_sense_ros::GNSSEphemeris>("gps/eph", 50);
-        GPS_geph_.pub = nh_.advertise<inertial_sense_ros::GlonassEphemeris>("gps/geph", 50);
-        SET_CALLBACK(DID_GPS1_RAW, gps_raw_t, GPS_raw_callback, 1);
-        SET_CALLBACK(DID_GPS_BASE_RAW, gps_raw_t, GPS_raw_callback, 1);
-        SET_CALLBACK(DID_GPS2_RAW, gps_raw_t, GPS_raw_callback, 1);
-        obs_bundle_timer_ = nh_.createTimer(ros::Duration(0.001), InertialSenseROS::GPS_obs_bundle_timer_callback, this);
-        if (!startup)
-            return;
-    }
 
-    // Set up the GPS info ROS stream
-    if (GPS_info_.enabled && !gpsInfoStreaming_)
-    {
-        ROS_INFO("Attempting to enable GPS Info data stream.");
-        SET_CALLBACK(DID_GPS1_SAT, gps_sat_t, GPS_info_callback, 1);
-        if (!startup)
-            return;
-    }
+        // Set up the GPS ROS stream - we always need GPS information for time sync, just don't always need to publish it
+        if (!gpsPosStreaming_)
+        {
+            ROS_INFO("Attempting to enable GPS Pos data stream.");
+            SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS_pos_callback, 1); // we always need GPS for Fix status
+            if (!startup)
+                return;
+        }
+        if (!gpsVelStreaming_)
+        {
+            ROS_INFO("Attempting to enable GPS Vel data stream.");
+            SET_CALLBACK(DID_GPS1_VEL, gps_vel_t, GPS_vel_callback, 1); // we always need GPS for Fix status
+            if (!startup)
+                return;
+        }
+        if (GPS_obs_.enabled && !gpsRawStreaming_)
+        {
+            ROS_INFO("Attempting to enable GPS Obs data stream.");
+            GPS_obs_.pub = nh_.advertise<inertial_sense_ros::GNSSObsVec>("gps/obs", 50);
+            GPS_eph_.pub = nh_.advertise<inertial_sense_ros::GNSSEphemeris>("gps/eph", 50);
+            GPS_geph_.pub = nh_.advertise<inertial_sense_ros::GlonassEphemeris>("gps/geph", 50);
+            SET_CALLBACK(DID_GPS1_RAW, gps_raw_t, GPS_raw_callback, 1);
+            SET_CALLBACK(DID_GPS_BASE_RAW, gps_raw_t, GPS_raw_callback, 1);
+            SET_CALLBACK(DID_GPS2_RAW, gps_raw_t, GPS_raw_callback, 1);
+            obs_bundle_timer_ = nh_.createTimer(ros::Duration(0.001), InertialSenseROS::GPS_obs_bundle_timer_callback, this);
+            if (!startup)
+                return;
+        }
 
+        // Set up the GPS info ROS stream
+        if (GPS_info_.enabled && !gpsInfoStreaming_)
+        {
+            ROS_INFO("Attempting to enable GPS Info data stream.");
+            SET_CALLBACK(DID_GPS1_SAT, gps_sat_t, GPS_info_callback, 1);
+            if (!startup)
+                return;
+        }
+    }
     // Set up the magnetometer ROS stream
     if (mag_.enabled && !magStreaming_)
     {

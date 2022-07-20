@@ -90,7 +90,7 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
     - Timestamp of strobe in message header
 
 
-__*Note: RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data.__
+__*Note: RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data. Raw data can only be streamed from the onboard m8 receiver. To enable the onboard receiver change `GPS_type` to m8.__
 - `gps/obs` (inertial_sense_ros/GNSSObservation)
     * Raw satellite observation (psuedorange and carrier phase)
 - `gps/eph` (inertial_sense_ros/GNSSEphemeris)
@@ -107,11 +107,14 @@ __*Note: RTK positioning or RTK compassing mode must be enabled to stream any ra
 * `~frame_id` (string, default "body")
   - frame id of all measurements
 * `enable_log` (bool, default: false)
-  - enable Inertial Sense Logger
-
-**Topic Configuration**
+  - enable Inertial Sense Logger - logs PPD log in .dat format
 * `~navigation_dt_ms` (int, default: Value retrieved from device flash configuration)
    - milliseconds between internal navigation filter updates (min=2ms/500Hz).  This is also determines the rate at which the topics are published.
+* `ioConfig` (int, default 39624800)
+   - ioConfig bits in decimal format. Used for selection of GPS receiver type. See eIoConfig in data_sets.h
+
+**Topic Configuration**
+
 * `~stream_DID_INS_1` (bool, default: false)
    - Flag to stream DID_INS_1 message
 * `~stream_DID_INS_2` (bool, default: false)
@@ -125,7 +128,7 @@ __*Note: RTK positioning or RTK compassing mode must be enabled to stream any ra
 * `~stream_odom_ins_ecef` (bool, default: false)
    - Flag to stream navigation solution in ECEF
 * `~stream_covariance_data` (bool, default: false)
-   - Flag to stream navigation covariance data
+   - Flag to stream navigation covariance data in odometry messages
 
      __*Note__ - Data set is 176 bytes. Care should be taken to ensure sufficient bandwidth
 * `~stream_INL2_states` (bool, default: false)    
@@ -154,22 +157,29 @@ __*Note: RTK positioning or RTK compassing mode must be enabled to stream any ra
 ## RTK Configuration
 
 * `~RTK_rover` (bool, default: false)
-  - Enables RTK rover mode (requires base corrections from an RTK base)
-* `~RTK_base` (bool, default: false)
-  - Makes the connected uINS a RTK base station and enables the publishing of corrections
+   - Enables RTK rover mode (requires base corrections from an RTK base)
+* `~RTK_base_USB` (bool, default: false)
+   - Makes the connected uINS a RTK base station and enables the publishing of corrections our of Serial2 port
+* `~RTK_base_serial` (bool, default: false)
+   - Makes the connected uINS a RTK base station and enables the publishing of corrections out the USB port
+* `~RTK_base_TCP` (bool, default: false)
+   - Makes the connected uINS a RTK base station and creates a TCP server with which to publish corrections
 * `~dual_GNSS` (bool, default: false)
-  - Uses both GPS antennas in a dual-GNSS configuration
+   - Uses both GPS antennas in a dual-GNSS configuration
 * `~RTK_rover_radio_enable` (bool, default: false)
-    - Enable radio on EVB2 for base corrections
+   - Enable radio on EVB2 for base corrections
 * `~RTK_correction_protocol` (string, default: RTCM3)
-    - Options are RTCM3 and UBLOX (for M8 receiver).  Rover and base must match.
+   - Options are RTCM3 and UBLOX (for M8 receiver).  Rover and base must match.
 * `~RTK_connection_attempt_limit` (string, default: RTCM3)
-    - Number of times to attempt NTRIP connection
+   - Number of times to attempt NTRIP connection
 * `~RTK_connection_attempt_backoff` (string, default: RTCM3)
-  - Sleep duration parameter. Sleep duration = attempt limit x attempt backoff
+   - Sleep duration parameter. Sleep duration = attempt limit x attempt backoff
 * `RTK_connectivity_watchdog_enabled` (bool default: false)
-    - Data reception watchdog
+   - Data reception watchdog
 * `RTK_connectivity_watchdog_timer_frequency` (float, default: 1)
+   - frequency in which to check for traffic (secs)
+* `RTK_data_transmission_interruption_limit` (float, default: 1)
+   - time afterwhich connection will be reinitiated.
 
 **TCP Configuration**
 * `~RTK_server_IP` (string, default: 127.0.0.1)

@@ -41,8 +41,6 @@ inertial_sense_ros:
   # # TCP - Inertial Sense
   # RTK_server_IP: "127.0.0.1"
   # RTK_server_port: 7777
-  # # every time we attempt to connect only try one time -->
-  # RTK_connection_attempt_limit: 1
   GPS_type: "F9P"
   RTK_rover: true
   RTK_rover_radio_enable: false

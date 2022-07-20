@@ -24,6 +24,9 @@
                            stream_diagnostics: false,
                            publishTf: true,
                            enable_log: false,
+                           <!-- F9P EVB2 RTK CMP ioConfig: 0x025ca000-->
+                           ioConfig: 39624800,
+                           <!-- ioConfig: 41056, -->
                            <!-- RTK_server_mount: "", -->
                            <!-- RTK_server_username: "", -->
                            <!-- RTK_server_password: "", -->
@@ -46,7 +49,9 @@
                            GPS_type: "F9P",
                            RTK_rover: true,
                            RTK_rover_radio_enable: false,
-                           RTK_base: false,
+                           RTK_base_USB: false,
+                           RTK_base_serial: false,
+                           RTK_base_TCP: false,
                            dual_GNSS: false,
                            inclination: 0,
                            declination: 0,

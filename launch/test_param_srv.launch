@@ -24,8 +24,8 @@
                            stream_diagnostics: false,
                            publishTf: true,
                            enable_log: false,
-                           <!-- F9P EVB2 RTK CMP ioConfig: 0x026ca060-->
-                           ioConfig: 40673376,
+                           <!-- F9P EVB2 RTK CMP ioConfig: 0x025ca000-->
+                           ioConfig: 39624800,
                            <!-- ioConfig: 41056, -->
                            <!-- RTK_server_mount: "", -->
                            <!-- RTK_server_username: "", -->

@@ -22,7 +22,7 @@ inertial_sense_ros:
   stream_diagnostics: false
   publishTf: true
   enable_log: false
-  ioConfig: 40673376  #F9P EVB2 RTK CMP: 0x025ca060
+  ioConfig: 39624800  #F9P EVB2 RTK CMP: 0x025ca060
   # ioConfig: 41056
   #RTK_server_mount: ""
   #RTK_server_username: ""

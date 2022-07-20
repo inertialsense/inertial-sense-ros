@@ -42,7 +42,7 @@
                            RTK_data_transmission_interruption_limit: 5,
                            RTK_correction_protocol: "RTCM3",
                             <!-- # TCP - Inertial Sense, -->
-                            RTK_server_IP: "66.219.246.93",
+                            RTK_server_IP: "127.0.0.1",
                             RTK_server_port: 7777,
                             <!-- # Every time we attempt to connect only try one time -->
                             <!-- RTK_connection_attempt_limit: 1, -->

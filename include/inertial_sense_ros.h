@@ -50,7 +50,7 @@
                             [this](InertialSense *i, p_data_t *data, int pHandle)      \
                             {                                                          \
                                 /* ROS_INFO("Got message %d", DID);*/                  \
-                                this->__cb_fun(reinterpret_cast<__type *>(data->buf)); \
+                                this->__cb_fun(DID, reinterpret_cast<__type *>(data->buf)); \
                             })
 
 class InertialSenseROS //: SerialListener
@@ -93,7 +93,7 @@ public:
     //void set_vector_flash_config(std::string param_name, uint32_t size, uint32_t offset);
     void get_flash_config();
     void reset_device();
-    void flash_config_callback(const nvm_flash_cfg_t *const msg);
+    void flash_config_callback(eDataIDs DID, const nvm_flash_cfg_t *const msg);
     bool flashConfigStreaming_ = false;
     // Serial Port Configuration
     std::string port_ = "/dev/ttyACM0";
@@ -156,37 +156,38 @@ public:
     bool RTK_base_serial_ = false;
     bool RTK_base_TCP_ = false;
     bool dual_GNSS_ = false;
-    
-    std::string gps_type_ = "F9P";
-    
+
+    std::string gps1_type_ = "F9P";
+    std::string gps2_type_ = "F9P";
+
     ros::Timer rtk_connectivity_watchdog_timer_;
     void start_rtk_connectivity_watchdog_timer();
     void stop_rtk_connectivity_watchdog_timer();
     void rtk_connectivity_watchdog_timer_callback(const ros::TimerEvent &timer_event);
 
-    void INS1_callback(const ins_1_t *const msg);
-    void INS2_callback(const ins_2_t *const msg);
-    void INS4_callback(const ins_4_t *const msg);    
-    void INL2_states_callback(const inl2_states_t *const msg);
-    void INS_covariance_callback(const ros_covariance_pose_twist_t *const msg);
-    void odom_ins_ned_callback(const ins_2_t *const msg);
-    void odom_ins_ecef_callback(const ins_2_t *const msg);
-    void odom_ins_enu_callback(const ins_2_t *const msg);
-    void GPS_info_callback(const gps_sat_t *const msg);
-    void mag_callback(const magnetometer_t *const msg);
-    void baro_callback(const barometer_t *const msg);
-    void preint_IMU_callback(const preintegrated_imu_t *const msg);
-    void strobe_in_time_callback(const strobe_in_time_t *const msg);
-    void diagnostics_callback(const ros::TimerEvent &event);
-    void GPS_pos_callback(const gps_pos_t *const msg);    
-    void GPS_vel_callback(const gps_vel_t *const msg);    
-    void GPS_raw_callback(const gps_raw_t *const msg);
-    void GPS_obs_callback(const obsd_t *const msg, int nObs); 
-    void GPS_obs_bundle_timer_callback(const ros::TimerEvent &e);
-    void GPS_eph_callback(const eph_t *const msg);
-    void GPS_geph_callback(const geph_t *const msg);
-    void RTK_Misc_callback(const gps_rtk_misc_t *const msg);
-    void RTK_Rel_callback(const gps_rtk_rel_t *const msg);
+    void INS1_callback(eDataIDs DID, const ins_1_t *const msg);
+    void INS2_callback(eDataIDs DID, const ins_2_t *const msg);
+    void INS4_callback(eDataIDs DID, const ins_4_t *const msg);
+    void INL2_states_callback(eDataIDs DID, const inl2_states_t *const msg);
+    void INS_covariance_callback(eDataIDs DID, const ros_covariance_pose_twist_t *const msg);
+    void odom_ins_ned_callback(eDataIDs DID, const ins_2_t *const msg);
+    void odom_ins_ecef_callback(eDataIDs DID, const ins_2_t *const msg);
+    void odom_ins_enu_callback(eDataIDs DID, const ins_2_t *const msg);
+    void GPS_info_callback(eDataIDs DID, const gps_sat_t *const msg);
+    void mag_callback(eDataIDs DID, const magnetometer_t *const msg);
+    void baro_callback(eDataIDs DID, const barometer_t *const msg);
+    void preint_IMU_callback(eDataIDs DID, const preintegrated_imu_t *const msg);
+    void strobe_in_time_callback(eDataIDs DID, const strobe_in_time_t *const msg);
+    void diagnostics_callback(eDataIDs DID, const ros::TimerEvent &event);
+    void GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg);
+    void GPS_vel_callback(eDataIDs DID, const gps_vel_t *const msg);
+    void GPS_raw_callback(eDataIDs DID, const gps_raw_t *const msg);
+    void GPS_obs_callback(eDataIDs DID, const obsd_t *const msg, int nObs);
+    void GPS_obs_bundle_timer_callback(eDataIDs DID, const ros::TimerEvent &e);
+    void GPS_eph_callback(eDataIDs DID, const eph_t *const msg);
+    void GPS_geph_callback(eDataIDs DID, const geph_t *const msg);
+    void RTK_Misc_callback(eDataIDs DID, const gps_rtk_misc_t *const msg);
+    void RTK_Rel_callback(eDataIDs DID, const gps_rtk_rel_t *const msg);
 
     float diagnostic_ar_ratio_, diagnostic_differential_age_, diagnostic_heading_base_to_rover_;
     uint diagnostic_fix_type_;
@@ -200,31 +201,37 @@ public:
     ros_stream_t odom_ins_ecef_;
     ros_stream_t odom_ins_enu_;
     ros_stream_t IMU_;
-    ros_stream_t GPS_info_;
     ros_stream_t mag_;
     ros_stream_t baro_;
     ros_stream_t preint_IMU_;
     ros_stream_t diagnostics_;
-    ros_stream_t GPS_;
+    ros_stream_t GPS1_;
+    ros_stream_t GPS1_info_;
+    ros_stream_t GPS1_obs_;
+    ros_stream_t GPS1_eph_;
+    ros_stream_t GPS1_geph_;
+    ros_stream_t GPS2_;
+    ros_stream_t GPS2_info_;
+    ros_stream_t GPS2_obs_;
+    ros_stream_t GPS2_eph_;
+    ros_stream_t GPS2_geph_;
+    ros_stream_t RTK_;
     ros_stream_t NavSatFix_;
     bool NavSatFixConfigured = false;
-    ros_stream_t GPS_obs_;
-    ros_stream_t GPS_eph_;
-    ros_stream_t GPS_geph_;
-    ros_stream_t RTK_;
 
     bool ins1Streaming_ = false;
     bool ins2Streaming_ = false;
     bool ins4Streaming_ = false;
     bool inl2StatesStreaming_ = false;
     bool insCovarianceStreaming_ = false;
-    bool gpsInfoStreaming_ = false;
     bool magStreaming_ = false;
     bool baroStreaming_ = false;
     bool preintImuStreaming_ = false;
     bool imuStreaming_ = false;
     bool strobeInStreaming_ = false;
     bool diagnosticsStreaming_ = false;
+    // NOTE: that GPS streaming flags are applicable for all GPS devices/receivers
+    bool gpsInfoStreaming_ = false;
     bool gpsPosStreaming_ = false;
     bool gpsVelStreaming_ = false;
     bool gpsRawStreaming_ = false;
@@ -243,7 +250,8 @@ public:
     bool perform_multi_mag_cal_srv_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     bool update_firmware_srv_callback(inertial_sense_ros::FirmwareUpdate::Request &req, inertial_sense_ros::FirmwareUpdate::Response &res);
 
-    void publishGPS();
+    void publishGPS1();
+    void publishGPS2();
 
     enum PositionCovarianceType
     {
@@ -343,6 +351,9 @@ public:
     inertial_sense_ros::GPS gps_msg;
     geometry_msgs::Vector3Stamped gps_velEcef;
     inertial_sense_ros::GPSInfo gps_info_msg;
+    inertial_sense_ros::GPS gps2_msg;
+    geometry_msgs::Vector3Stamped gps2_velEcef;
+    inertial_sense_ros::GPSInfo gps2_info_msg;
     inertial_sense_ros::INL2States inl2_states_msg;
     inertial_sense_ros::DID_INS1 did_ins_1_msg;
     inertial_sense_ros::DID_INS2 did_ins_2_msg;
@@ -355,7 +366,7 @@ public:
     ros::NodeHandle nh_private_;
 
     // Connection to the uINS
-    InertialSense IS_;   
+    InertialSense IS_;
 
     //Flash parameters
 

@@ -158,7 +158,9 @@ public:
     bool dual_GNSS_ = false;
 
     std::string gps1_type_ = "F9P";
+    std::string gps1_topic_ = "gps";
     std::string gps2_type_ = "F9P";
+    std::string gps2_topic_ = "gps2";
 
     ros::Timer rtk_connectivity_watchdog_timer_;
     void start_rtk_connectivity_watchdog_timer();

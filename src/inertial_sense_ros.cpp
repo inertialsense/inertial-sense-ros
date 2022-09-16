@@ -490,6 +490,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
     }
     if (!startup)
     {
+        data_streams_enabled_ = true;
         data_stream_timer_.stop();
         ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
         return;
@@ -1319,6 +1320,7 @@ void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg
     if (!gpsPosStreaming_)
         ROS_INFO("%s response received", cISDataMappings::GetDataSetName(DID));
 
+    ROS_INFO("IS GPS callback");
     gpsPosStreaming_ = true;
     GPS_week_ = msg->week;
     GPS_towOffset_ = msg->towOffset;

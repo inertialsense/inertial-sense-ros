@@ -1320,7 +1320,6 @@ void InertialSenseROS::GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg
     if (!gpsPosStreaming_)
         ROS_INFO("%s response received", cISDataMappings::GetDataSetName(DID));
 
-    ROS_INFO("IS GPS callback");
     gpsPosStreaming_ = true;
     GPS_week_ = msg->week;
     GPS_towOffset_ = msg->towOffset;

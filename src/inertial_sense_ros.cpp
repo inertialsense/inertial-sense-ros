@@ -490,6 +490,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
     }
     if (!startup)
     {
+        data_streams_enabled_ = true;
         data_stream_timer_.stop();
         ROS_INFO("Inertial Sense ROS data streams successfully enabled.");
         return;

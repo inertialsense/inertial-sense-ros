@@ -239,6 +239,7 @@ public:
     bool gpsRawStreaming_ = false;
     bool rtkMiscStreaming_ = false;
     bool rtkRelStreaming_ = false;
+    bool data_streams_enabled_ = false;
 
     // Services
     ros::ServiceServer mag_cal_srv_;

@@ -39,6 +39,7 @@
 #include "diagnostic_msgs/DiagnosticArray.h"
 #include <tf/transform_broadcaster.h>
 #include "ISConstants.h"
+/home/siddirp/imx/SDK/EVB-2/IS_EVB-2/src/version/repositoryInfo.h
 //#include "geometry/xform.h"
 
 #define GPS_UNIX_OFFSET 315964800 // GPS time started on 6/1/1980 while UNIX time started 1/1/1970 this is the difference between those in seconds
@@ -77,6 +78,7 @@ public:
     template <typename Derived1>
     bool get_node_vector_yaml(YAML::Node node, const std::string key, int size, Derived1 &val);
     void connect();
+    bool protocol_compatible();
     void set_navigation_dt_ms();
     void configure_flash_parameters();
     void configure_rtk();
@@ -175,7 +177,7 @@ public:
     void GPS_info_callback(const gps_sat_t *const msg);
     void mag_callback(const magnetometer_t *const msg);
     void baro_callback(const barometer_t *const msg);
-    void preint_IMU_callback(const preintegrated_imu_t *const msg);
+    void preint_IMU_callback(const pimu_t *const msg);
     void strobe_in_time_callback(const strobe_in_time_t *const msg);
     void diagnostics_callback(const ros::TimerEvent &event);
     void GPS_pos_callback(const gps_pos_t *const msg);    

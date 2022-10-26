@@ -25,6 +25,14 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     }
     connect();
 
+    //Check protocol and firmware version
+    if( !protocol_compatible())
+    {
+        ROS_FATAL("Protocol version of ROS node does not match device protocol!");
+
+    }
+
+
     // Start Up ROS service servers
     refLLA_set_current_srv_ = nh_.advertiseService("set_refLLA_current", &InertialSenseROS::set_current_position_as_refLLA, this);
     refLLA_set_value_srv_ = nh_.advertiseService("set_refLLA_value", &InertialSenseROS::set_refLLA_to_value, this);
@@ -232,7 +240,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need NED
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                     // Need angular rate data from IMU
+        SET_CALLBACK(DID_PIMU, pimu_t, preint_IMU_callback, 1);                     // Need angular rate data from IMU
         IMU_.enabled = true;
         // Create Identity Matrix
         //
@@ -262,7 +270,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need quaternion and ecef
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
+        SET_CALLBACK(DID_PIMU, pimu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
         IMU_.enabled = true;
         // Create Identity Matrix
         //
@@ -292,7 +300,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
         SET_CALLBACK(DID_INS_4, ins_4_t, INS4_callback, 1);                                                   // Need ENU
         if (covariance_enabled_)
             SET_CALLBACK(DID_ROS_COVARIANCE_POSE_TWIST, ros_covariance_pose_twist_t, INS_covariance_callback, 200); // Need Covariance data
-        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
+        SET_CALLBACK(DID_PIMU, pimu_t, preint_IMU_callback, 1);                                              // Need angular rate data from IMU
         IMU_.enabled = true;
         // Create Identity Matrix
         //
@@ -418,14 +426,14 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
     if (preint_IMU_.enabled && !preintImuStreaming_)
     {
         ROS_INFO("Attempting to enable preint IMU data stream.");
-        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
+        SET_CALLBACK(DID_PIMU, pimu_t, preint_IMU_callback, 1);
         if (!startup)
             return;
     }
     if(IMU_.enabled && !imuStreaming_)
     {
         ROS_INFO("Attempting to enable IMU data stream.");
-        SET_CALLBACK(DID_PREINTEGRATED_IMU, preintegrated_imu_t, preint_IMU_callback, 1);
+        SET_CALLBACK(DID_PIMU, pimu_t, preint_IMU_callback, 1);
         if (!startup)
             return;
     }
@@ -470,6 +478,21 @@ void InertialSenseROS::connect()
     {
         // Print if Successful
         ROS_INFO("Connected to uINS %d on \"%s\", at %d baud", IS_.GetDeviceInfo().serialNumber, port_.c_str(), baudrate_);
+    }
+}
+
+bool InertialSenseROS::protocol_compatible()
+{
+    if( IS_.GetDeviceInfo().protocolVer[0] != PROTOCOL_VERSION_CHAR0 || \
+            IS_.GetDeviceInfo().protocolVer[1] != PROTOCOL_VERSION_CHAR1 || \
+            IS_.GetDeviceInfo().protocolVer[2] != PROTOCOL_VERSION_CHAR2 || \
+            IS_.GetDeviceInfo().protocolVer[3] != PROTOCOL_VERSION_CHAR3)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }
 
@@ -1431,26 +1454,26 @@ void InertialSenseROS::baro_callback(const barometer_t *const msg)
     baro_.pub.publish(baro_msg);
 }
 
-void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
+void InertialSenseROS::preint_IMU_callback(const pimu_t *const msg)
 {
     
     if (preint_IMU_.enabled)
     {
         if (!preintImuStreaming_)
         {
-            ROS_INFO("DID_PREINTEGRATED_IMU response received");
+            ROS_INFO("DID_PIMU response received");
             preint_IMU_.pub = nh_.advertise<inertial_sense_ros::PreIntIMU>("preint_imu", 1);
         }
         preintImuStreaming_ = true;
         preintIMU_msg.header.stamp = ros_time_from_start_time(msg->time);
         preintIMU_msg.header.frame_id = frame_id_;
-        preintIMU_msg.dtheta.x = (msg->theta1[0] + msg->theta2[0]) / 2;
-        preintIMU_msg.dtheta.y = (msg->theta1[1] + msg->theta2[1]) / 2;
-        preintIMU_msg.dtheta.z = (msg->theta1[2] + msg->theta2[2]) / 2;
+        preintIMU_msg.dtheta.x = msg->theta[0];
+        preintIMU_msg.dtheta.y = msg->theta[1];
+        preintIMU_msg.dtheta.z = msg->theta[2];
 
-        preintIMU_msg.dvel.x = (msg->vel1[0] + msg->vel2[0]) / 2;
-        preintIMU_msg.dvel.y = (msg->vel1[1] + msg->vel2[1]) / 2;
-        preintIMU_msg.dvel.z = (msg->vel1[2] + msg->vel2[2]) / 2;
+        preintIMU_msg.dvel.x = msg->vel[0];
+        preintIMU_msg.dvel.y = msg->vel[1];
+        preintIMU_msg.dvel.z = msg->vel[2];
 
         preintIMU_msg.dt = msg->dt;
 
@@ -1468,12 +1491,12 @@ void InertialSenseROS::preint_IMU_callback(const preintegrated_imu_t *const msg)
         imu_msg.header.stamp = ros_time_from_start_time(msg->time);
         imu_msg.header.frame_id = frame_id_;
 
-        imu_msg.angular_velocity.x = ((msg->theta1[0] + msg->theta2[0]) / 2) /msg->dt;
-        imu_msg.angular_velocity.y = ((msg->theta1[1] + msg->theta2[1]) / 2) /msg->dt;
-        imu_msg.angular_velocity.z = ((msg->theta1[2] + msg->theta2[2]) / 2) /msg->dt;
-        imu_msg.linear_acceleration.x = ((msg->vel1[0] + msg->vel2[0]) / 2) /msg->dt;
-        imu_msg.linear_acceleration.y = ((msg->vel1[1] + msg->vel2[1]) / 2) /msg->dt;
-        imu_msg.linear_acceleration.z = ((msg->vel1[2] + msg->vel2[2]) / 2) /msg->dt;
+        imu_msg.angular_velocity.x = msg->theta[0] /msg->dt;
+        imu_msg.angular_velocity.y = msg->theta[1] /msg->dt;
+        imu_msg.angular_velocity.z = msg->theta[2] /msg->dt;
+        imu_msg.linear_acceleration.x = msg->vel[0]/msg->dt;
+        imu_msg.linear_acceleration.y = msg->vel[1]/msg->dt;
+        imu_msg.linear_acceleration.z = msg->vel[2]/msg->dt;
 
         IMU_.pub.publish(imu_msg);
     }

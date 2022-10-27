@@ -39,12 +39,14 @@
 #include "diagnostic_msgs/DiagnosticArray.h"
 #include <tf/transform_broadcaster.h>
 #include "ISConstants.h"
-/home/siddirp/imx/SDK/EVB-2/IS_EVB-2/src/version/repositoryInfo.h
 //#include "geometry/xform.h"
 
 #define GPS_UNIX_OFFSET 315964800 // GPS time started on 6/1/1980 while UNIX time started 1/1/1970 this is the difference between those in seconds
 #define LEAP_SECONDS 18           // GPS time does not have leap seconds, UNIX does (as of 1/1/2017 - next one is probably in 2020 sometime unless there is some crazy earthquake or nuclear blast)
 #define UNIX_TO_GPS_OFFSET (GPS_UNIX_OFFSET - LEAP_SECONDS)
+#define FIRMWARE_VERSION_CHAR0 1
+#define FIRMWARE_VERSION_CHAR1 9
+#define FIRMWARE_VERSION_CHAR2 0
 
 #define SET_CALLBACK(DID, __type, __cb_fun, __periodmultiple)                          \
     IS_.BroadcastBinaryData(DID, __periodmultiple,                                     \
@@ -78,7 +80,7 @@ public:
     template <typename Derived1>
     bool get_node_vector_yaml(YAML::Node node, const std::string key, int size, Derived1 &val);
     void connect();
-    bool protocol_compatible();
+    bool firmware_compatiblity_check();
     void set_navigation_dt_ms();
     void configure_flash_parameters();
     void configure_rtk();

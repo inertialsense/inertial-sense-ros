@@ -26,7 +26,7 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     connect();
 
     //Check protocol and firmware version
-    if( !protocol_compatible())
+    if( !firmware_compatiblity_check())
     {
         ROS_FATAL("Protocol version of ROS node does not match device protocol!");
 
@@ -481,12 +481,15 @@ void InertialSenseROS::connect()
     }
 }
 
-bool InertialSenseROS::protocol_compatible()
+bool InertialSenseROS::firmware_compatiblity_check()
 {
     if( IS_.GetDeviceInfo().protocolVer[0] != PROTOCOL_VERSION_CHAR0 || \
             IS_.GetDeviceInfo().protocolVer[1] != PROTOCOL_VERSION_CHAR1 || \
             IS_.GetDeviceInfo().protocolVer[2] != PROTOCOL_VERSION_CHAR2 || \
-            IS_.GetDeviceInfo().protocolVer[3] != PROTOCOL_VERSION_CHAR3)
+            IS_.GetDeviceInfo().protocolVer[3] != PROTOCOL_VERSION_CHAR3 || \
+            IS_.GetDeviceInfo().firmwareVer[0] != FIRMWARE_VERSION_CHAR0 || \
+            IS_.GetDeviceInfo().firmwareVer[1] != FIRMWARE_VERSION_CHAR1 || \
+            IS_.GetDeviceInfo().firmwareVer[2] != FIRMWARE_VERSION_CHAR2)
     {
         return false;
     }

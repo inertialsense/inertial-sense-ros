@@ -44,6 +44,9 @@
 #define GPS_UNIX_OFFSET 315964800 // GPS time started on 6/1/1980 while UNIX time started 1/1/1970 this is the difference between those in seconds
 #define LEAP_SECONDS 18           // GPS time does not have leap seconds, UNIX does (as of 1/1/2017 - next one is probably in 2020 sometime unless there is some crazy earthquake or nuclear blast)
 #define UNIX_TO_GPS_OFFSET (GPS_UNIX_OFFSET - LEAP_SECONDS)
+#define FIRMWARE_VERSION_CHAR0 1
+#define FIRMWARE_VERSION_CHAR1 9
+#define FIRMWARE_VERSION_CHAR2 0
 
 #define SET_CALLBACK(DID, __type, __cb_fun, __periodmultiple)                          \
     IS_.BroadcastBinaryData(DID, __periodmultiple,                                     \
@@ -77,6 +80,7 @@ public:
     template <typename Derived1>
     bool get_node_vector_yaml(YAML::Node node, const std::string key, int size, Derived1 &val);
     void connect();
+    bool firmware_compatiblity_check();
     void set_navigation_dt_ms();
     void configure_flash_parameters();
     void configure_rtk();
@@ -175,7 +179,7 @@ public:
     void GPS_info_callback(const gps_sat_t *const msg);
     void mag_callback(const magnetometer_t *const msg);
     void baro_callback(const barometer_t *const msg);
-    void preint_IMU_callback(const preintegrated_imu_t *const msg);
+    void preint_IMU_callback(const pimu_t *const msg);
     void strobe_in_time_callback(const strobe_in_time_t *const msg);
     void diagnostics_callback(const ros::TimerEvent &event);
     void GPS_pos_callback(const gps_pos_t *const msg);    

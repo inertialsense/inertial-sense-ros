@@ -189,8 +189,10 @@ public:
     void GPS_obs_bundle_timer_callback(const ros::TimerEvent &e);
     void GPS_eph_callback(const eph_t *const msg);
     void GPS_geph_callback(const geph_t *const msg);
-    void RTK_Misc_callback(const gps_rtk_misc_t *const msg);
-    void RTK_Rel_callback(const gps_rtk_rel_t *const msg);
+    void RTK_pos_Misc_callback(const gps_rtk_misc_t *const msg);
+    void RTK_pos_Rel_callback(const gps_rtk_rel_t *const msg);
+    void RTK_cmp_Misc_callback(const gps_rtk_misc_t *const msg);
+    void RTK_cmp_Rel_callback(const gps_rtk_rel_t *const msg);
 
     float diagnostic_ar_ratio_, diagnostic_differential_age_, diagnostic_heading_base_to_rover_;
     uint diagnostic_fix_type_;
@@ -216,7 +218,7 @@ public:
     ros_stream_t GPS_eph_;
     ros_stream_t GPS_geph_;
     ros_stream_t RTK_pos_;
-    ros_stream_t RTK_cmp;
+    ros_stream_t RTK_cmp_;
 
     bool ins1Streaming_ = false;
     bool ins2Streaming_ = false;
@@ -233,8 +235,10 @@ public:
     bool gpsPosStreaming_ = false;
     bool gpsVelStreaming_ = false;
     bool gpsRawStreaming_ = false;
-    bool rtkMiscStreaming_ = false;
-    bool rtkRelStreaming_ = false;
+    bool rtkPosMiscStreaming_ = false;
+    bool rtkCmpMiscStreaming_ = false;
+    bool rtkPosRelStreaming_ = false;
+    bool rtkCmpRelStreaming_ = false;
 
     // Services
     ros::ServiceServer mag_cal_srv_;

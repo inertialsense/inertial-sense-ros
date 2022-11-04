@@ -215,8 +215,8 @@ public:
     ros_stream_t GPS_obs_;
     ros_stream_t GPS_eph_;
     ros_stream_t GPS_geph_;
-    ros_stream_t RTK_;
-    ros_stream_t dual_GNSS;
+    ros_stream_t RTK_pos_;
+    ros_stream_t RTK_cmp;
 
     bool ins1Streaming_ = false;
     bool ins2Streaming_ = false;

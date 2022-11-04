@@ -668,38 +668,38 @@ void InertialSenseROS::configure_rtk()
         if (RTK_rover_)
         {
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL;
-            RTK_.enabled = true;
+            RTK_pos_.enabled = true;
             ROS_INFO("InertialSense: RTK Rover Configured.");
             connect_rtk_client(RTK_correction_protocol_, RTK_server_IP_, RTK_server_port_);
 
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
 
             start_rtk_connectivity_watchdog_timer();
         }
         if (dual_GNSS_)
         {
-            dual_GNSS.enabled = true;
+            RTK_cmp.enabled = true;
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_COMPASSING_F9P;
             SET_CALLBACK(DID_GPS2_RTK_CMP_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS2_RTK_CMP_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            dual_GNSS.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("dual_GNSS/info", 10);
-            dual_GNSS.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("dual_GNSS/rel", 10);
+            RTK_cmp.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_cmp/info", 10);
+            RTK_cmp.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_cmp/rel", 10);
             ROS_INFO("InertialSense: Dual GNSS (compassing) configured");
         }
         if (RTK_rover_radio_enable_)
         {
-            RTK_.enabled = true;
+            RTK_pos_.enabled = true;
             RTK_base_USB_ = RTK_base_USB_= false;
             RTK_base_serial_ = RTK_base_serial_= false;
             ROS_INFO("InertialSense: Configured as RTK Rover with radio enabled");
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL;
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
         }
         if (RTK_base_USB_)
         {
@@ -734,8 +734,8 @@ void InertialSenseROS::configure_rtk()
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_COMPASSING;
             SET_CALLBACK(DID_GPS2_RTK_CMP_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS2_RTK_CMP_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_cmp/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_cmp/rel", 10);
         }
 
         if (RTK_rover_radio_enable_)
@@ -749,8 +749,8 @@ void InertialSenseROS::configure_rtk()
 
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
         }
         else if (RTK_rover_)
         {
@@ -766,8 +766,8 @@ void InertialSenseROS::configure_rtk()
 
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
 
             start_rtk_connectivity_watchdog_timer();
         }
@@ -1511,7 +1511,7 @@ void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t *const msg)
     if (!rtkMiscStreaming_)
             ROS_INFO("DID_GPS1_RTK_POS_MISC response received");
     rtkMiscStreaming_ = true;
-    if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
+    if (RTK_pos_.enabled && abs(GPS_towOffset_) > 0.001)
     {
         inertial_sense_ros::RTKInfo rtk_info;
         rtk_info.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs / 1000.0);
@@ -1525,7 +1525,7 @@ void InertialSenseROS::RTK_Misc_callback(const gps_rtk_misc_t *const msg)
         rtk_info.roverEph = msg->roverBeidouEphemerisCount + msg->roverGalileoEphemerisCount + msg->roverGlonassEphemerisCount + msg->roverGpsEphemerisCount;
         rtk_info.roverObs = msg->roverBeidouObservationCount + msg->roverGalileoObservationCount + msg->roverGlonassObservationCount + msg->roverGpsObservationCount;
         rtk_info.cycle_slip_count = msg->cycleSlipCount;
-        RTK_.pub.publish(rtk_info);
+        RTK_pos_.pub.publish(rtk_info);
     }
 }
 
@@ -1534,7 +1534,7 @@ void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
     if (!rtkRelStreaming_)
             ROS_INFO("DID_GPS1_RTK_POS_REL response received");
     rtkRelStreaming_ = true;
-    if (RTK_.enabled && abs(GPS_towOffset_) > 0.001)
+    if (RTK_pos_.enabled && abs(GPS_towOffset_) > 0.001)
     {
         inertial_sense_ros::RTKRel rtk_rel;
         rtk_rel.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs / 1000.0);
@@ -1568,7 +1568,7 @@ void InertialSenseROS::RTK_Rel_callback(const gps_rtk_rel_t *const msg)
         rtk_rel.vector_base_to_rover.z = msg->baseToRoverVector[2];
         rtk_rel.distance_base_to_rover = msg->baseToRoverDistance;
         rtk_rel.heading_base_to_rover = msg->baseToRoverHeading;
-        RTK_.pub2.publish(rtk_rel);
+        RTK_pos_.pub2.publish(rtk_rel);
 
         // save for diagnostics
         diagnostic_ar_ratio_ = rtk_rel.ar_ratio;
@@ -1735,7 +1735,7 @@ void InertialSenseROS::diagnostics_callback(const ros::TimerEvent &event)
     cno_mean.message = std::to_string(gps_msg.cno);
     diag_array.status.push_back(cno_mean);
 
-    if (RTK_.enabled)
+    if (RTK_pos_.enabled)
     {
         diagnostic_msgs::DiagnosticStatus rtk_status;
         rtk_status.name = "RTK";

@@ -56,9 +56,6 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
         configure_flash_parameters();
     }
 
-    while(1)
-    {}
-
     if (log_enabled_)
     {
         start_log();    // Start log should always happen last.

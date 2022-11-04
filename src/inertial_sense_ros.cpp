@@ -48,13 +48,16 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     
     IS_.StopBroadcasts(true);
     configure_data_streams(true);
-    configure_rtk(); 
+    configure_rtk();
     IS_.SavePersistent();
 
     if (configFlashParameters)
     {   // Set uINS flash parameters after everything thing else so uINS flash write processor stall doesn't interfere.
         configure_flash_parameters();
     }
+
+    while(1)
+    {}
 
     if (log_enabled_)
     {
@@ -522,8 +525,6 @@ void InertialSenseROS::configure_flash_parameters()
         current_flash_cfg.gps1AntOffset != gps1AntOffset_ ||\
         current_flash_cfg.gps2AntOffset != gps2AntOffset_ ||\
         current_flash_cfg.refLla != refLla_ ||\
-        current_flash_cfg.magInclination != magInclination_ ||\
-        current_flash_cfg.magDeclination != magDeclination_ ||\
         current_flash_cfg.insDynModel != insDynModel_ ||\
         current_flash_cfg.ioConfig != ioConfig_)
     {
@@ -534,7 +535,7 @@ void InertialSenseROS::configure_flash_parameters()
         memcpy(current_flash_cfg.gps2AntOffset, gps2AntOffset_, sizeof(gps2AntOffset_));
         memcpy(current_flash_cfg.refLla, refLla_, sizeof(refLla_));
         current_flash_cfg.ioConfig = ioConfig_;
-        current_flash_cfg.magInclination = magInclination_;
+        // current_flash_cfg.magInclination = magInclination_;
         current_flash_cfg.magDeclination = magDeclination_;
         current_flash_cfg.insDynModel = insDynModel_;
 
@@ -545,7 +546,7 @@ void InertialSenseROS::configure_flash_parameters()
     {
         
         sleep(3);
-        reset_device();
+        // reset_device();
     }
 
 }
@@ -673,19 +674,19 @@ void InertialSenseROS::configure_rtk()
 
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
+            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
 
             start_rtk_connectivity_watchdog_timer();
         }
         if (dual_GNSS_)
         {
-            RTK_.enabled = true;
+            dual_GNSS.enabled = true;
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_COMPASSING_F9P;
             SET_CALLBACK(DID_GPS2_RTK_CMP_MISC, gps_rtk_misc_t, RTK_Misc_callback, 1);
             SET_CALLBACK(DID_GPS2_RTK_CMP_REL, gps_rtk_rel_t, RTK_Rel_callback, 1);
-            RTK_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
-            RTK_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
+            dual_GNSS.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("dual_GNSS/info", 10);
+            dual_GNSS.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("dual_GNSS/rel", 10);
             ROS_INFO("InertialSense: Dual GNSS (compassing) configured");
         }
         if (RTK_rover_radio_enable_)

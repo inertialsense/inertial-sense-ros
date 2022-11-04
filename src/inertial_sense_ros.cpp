@@ -783,6 +783,7 @@ void InertialSenseROS::configure_rtk()
         }
         IS_.SendData(DID_FLASH_CONFIG, reinterpret_cast<uint8_t *>(&RTKCfgBits), sizeof(RTKCfgBits), offsetof(nvm_flash_cfg_t, RTKCfgBits));
     }
+    printf("RTKCfgBits: %x", RTKCfgBits);
 }
 
 template <typename T>

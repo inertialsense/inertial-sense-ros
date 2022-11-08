@@ -114,6 +114,7 @@ public:
         bool enabled = false;
         ros::Publisher pub;
         ros::Publisher pub2;
+        int period_multiple = 1;
     } ros_stream_t;
 
 
@@ -201,7 +202,6 @@ public:
     ros_stream_t DID_INS_2_;
     ros_stream_t DID_INS_4_;
     ros_stream_t INL2_states_;
-    ros_stream_t DID_ROS_COVARIANCE_POSE_TWIST_;
     ros_stream_t odom_ins_ned_;
     ros_stream_t odom_ins_ecef_;
     ros_stream_t odom_ins_enu_;
@@ -211,7 +211,8 @@ public:
     ros_stream_t baro_;
     ros_stream_t preint_IMU_;
     ros_stream_t diagnostics_;
-    ros_stream_t GPS_;
+    ros_stream_t GPS1_;
+    ros_stream_t GPS2_;
     ros_stream_t NavSatFix_;
     bool NavSatFixConfigured = false;
     ros_stream_t GPS_obs_;
@@ -232,8 +233,10 @@ public:
     bool imuStreaming_ = false;
     bool strobeInStreaming_ = false;
     bool diagnosticsStreaming_ = false;
-    bool gpsPosStreaming_ = false;
-    bool gpsVelStreaming_ = false;
+    bool gps1PosStreaming_ = false;
+    bool gps1VelStreaming_ = false;
+    bool gps2PosStreaming_ = false;
+    bool gps2VelStreaming_ = false;
     bool gpsRawStreaming_ = false;
     bool rtkPosMiscStreaming_ = false;
     bool rtkCmpMiscStreaming_ = false;

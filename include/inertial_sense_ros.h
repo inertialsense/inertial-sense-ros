@@ -183,8 +183,10 @@ public:
     void preint_IMU_callback(const pimu_t *const msg);
     void strobe_in_time_callback(const strobe_in_time_t *const msg);
     void diagnostics_callback(const ros::TimerEvent &event);
-    void GPS_pos_callback(const gps_pos_t *const msg);    
-    void GPS_vel_callback(const gps_vel_t *const msg);    
+    void GPS1_pos_callback(const gps_pos_t *const msg);    
+    void GPS1_vel_callback(const gps_vel_t *const msg);    
+    void GPS2_pos_callback(const gps_pos_t *const msg);    
+    void GPS2_vel_callback(const gps_vel_t *const msg);    
     void GPS_raw_callback(const gps_raw_t *const msg);
     void GPS_obs_callback(const obsd_t *const msg, int nObs); 
     void GPS_obs_bundle_timer_callback(const ros::TimerEvent &e);
@@ -255,7 +257,8 @@ public:
     bool perform_multi_mag_cal_srv_callback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     bool update_firmware_srv_callback(inertial_sense_ros::FirmwareUpdate::Request &req, inertial_sense_ros::FirmwareUpdate::Response &res);
 
-    void publishGPS();
+    void publishGPS1();
+    void publishGPS2();
 
     enum PositionCovarianceType
     {
@@ -352,8 +355,10 @@ public:
     nav_msgs::Odometry ecef_odom_msg;
     nav_msgs::Odometry enu_odom_msg;
     sensor_msgs::NavSatFix NavSatFix_msg;
-    inertial_sense_ros::GPS gps_msg;
-    geometry_msgs::Vector3Stamped gps_velEcef;
+    inertial_sense_ros::GPS gps1_msg;
+    inertial_sense_ros::GPS gps2_msg;
+    geometry_msgs::Vector3Stamped gps1_velEcef;
+    geometry_msgs::Vector3Stamped gps2_velEcef;
     inertial_sense_ros::GPSInfo gps_info_msg;
     inertial_sense_ros::INL2States inl2_states_msg;
     inertial_sense_ros::DID_INS1 did_ins_1_msg;

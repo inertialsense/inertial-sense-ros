@@ -173,7 +173,7 @@ void InertialSenseROS::load_params_srv()
     nh_private_.getParam("imu_period_multiple", IMU_.period_multiple);
     nh_private_.param("stream_GPS1", GPS1_.enabled,true);
     nh_private_.getParam("gps1_period_multiple", GPS1_.period_multiple);
-    nh_private_.param("stream_GPS2", GP2_.enabled,true);
+    nh_private_.param("stream_GPS2", GPS2_.enabled,true);
     nh_private_.getParam("gps2_period_multiple", GPS2_.period_multiple);
     nh_private_.getParam("stream_GPS_raw", GPS_obs_.enabled);
     nh_private_.getParam("gps_raw_period_multiple", GPS_obs_.period_multiple);
@@ -236,7 +236,7 @@ void InertialSenseROS::configure_data_streams(bool startup) // if startup is tru
     if (!gps1PosStreaming_) // we always need GPS for Fix status
     {
         ROS_INFO("Attempting to enable GPS1 Pos data stream.");
-        SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS1_pos_callback, 1); 
+        SET_CALLBACK(DID_GPS1_POS, gps_pos_t, GPS1_pos_callback, blahblahblah); Also, add gps2 stuff to diagnostics?
     }
 
     if (!strobeInStreaming_)
@@ -1378,7 +1378,7 @@ void InertialSenseROS::GPS1_pos_callback(const gps_pos_t *const msg)
         gps1_msg.hAcc = msg->hAcc;
         gps1_msg.vAcc = msg->vAcc;
         gps1_msg.pDop = msg->pDop;
-        publishGPS();
+        publishGPS1();
     }
     if (NavSatFix_.enabled)
     {
@@ -1418,45 +1418,45 @@ void InertialSenseROS::GPS1_pos_callback(const gps_pos_t *const msg)
 
 void InertialSenseROS::GPS1_vel_callback(const gps_vel_t *const msg)
 {
-    if (!gpsVelStreaming_)
+    if (!gps1VelStreaming_)
         ROS_INFO("DID_GPS1_VEL response received");
-    gpsVelStreaming_ = true;
-    if (GPS_.enabled && abs(GPS_towOffset_) > 0.001)
+    gps1VelStreaming_ = true;
+    if (GPS1_.enabled && abs(GPS_towOffset_) > 0.001)
     {
-        gps_velEcef.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs / 1.0e3);
-        gps_velEcef.vector.x = msg->vel[0];
-        gps_velEcef.vector.y = msg->vel[1];
-        gps_velEcef.vector.z = msg->vel[2];
-        publishGPS();
+        gps1_velEcef.header.stamp = ros_time_from_week_and_tow(GPS_week_, msg->timeOfWeekMs / 1.0e3);
+        gps1_velEcef.vector.x = msg->vel[0];
+        gps1_velEcef.vector.y = msg->vel[1];
+        gps1_velEcef.vector.z = msg->vel[2];
+        publishGPS1();
     }
 }
 
-oid InertialSenseROS::GPS2_pos_callback(const gps_pos_t *const msg)
+void InertialSenseROS::GPS2_pos_callback(const gps_pos_t *const msg)
 {
-    if (!gpsPosStreaming_)
+    if (!gps2PosStreaming_)
         ROS_INFO("DID_GPS2_POS response received");
-    gpsPosStreaming_ = true;
+    gps2PosStreaming_ = true;
     GPS_week_ = msg->week;
     GPS_towOffset_ = msg->towOffset;
-    if (GPS_.enabled && msg->status & GPS_STATUS_FIX_MASK)
+    if (GPS2_.enabled && msg->status & GPS_STATUS_FIX_MASK)
     {
-        gps_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs / 1.0e3);
-        gps_msg.week = msg->week;
-        gps_msg.status = msg->status;
-        gps_msg.header.frame_id = frame_id_;
-        gps_msg.num_sat = (uint8_t)(msg->status & GPS_STATUS_NUM_SATS_USED_MASK);
-        gps_msg.cno = msg->cnoMean;
-        gps_msg.latitude = msg->lla[0];
-        gps_msg.longitude = msg->lla[1];
-        gps_msg.altitude = msg->lla[2];
-        gps_msg.posEcef.x = ecef_[0] = msg->ecef[0];
-        gps_msg.posEcef.y = ecef_[1] = msg->ecef[1];
-        gps_msg.posEcef.z = ecef_[2] = msg->ecef[2];
-        gps_msg.hMSL = msg->hMSL;
-        gps_msg.hAcc = msg->hAcc;
-        gps_msg.vAcc = msg->vAcc;
-        gps_msg.pDop = msg->pDop;
-        publishGPS();
+        gps2_msg.header.stamp = ros_time_from_week_and_tow(msg->week, msg->timeOfWeekMs / 1.0e3);
+        gps2_msg.week = msg->week;
+        gps2_msg.status = msg->status;
+        gps2_msg.header.frame_id = frame_id_;
+        gps2_msg.num_sat = (uint8_t)(msg->status & GPS_STATUS_NUM_SATS_USED_MASK);
+        gps2_msg.cno = msg->cnoMean;
+        gps2_msg.latitude = msg->lla[0];
+        gps2_msg.longitude = msg->lla[1];
+        gps2_msg.altitude = msg->lla[2];
+        gps2_msg.posEcef.x = ecef_[0] = msg->ecef[0];
+        gps2_msg.posEcef.y = ecef_[1] = msg->ecef[1];
+        gps2_msg.posEcef.z = ecef_[2] = msg->ecef[2];
+        gps2_msg.hMSL = msg->hMSL;
+        gps2_msg.hAcc = msg->hAcc;
+        gps2_msg.vAcc = msg->vAcc;
+        gps2_msg.pDop = msg->pDop;
+        publishGPS2();
     }
 }
 
@@ -1471,17 +1471,27 @@ void InertialSenseROS::GPS2_vel_callback(const gps_vel_t *const msg)
         gps2_velEcef.vector.x = msg->vel[0];
         gps2_velEcef.vector.y = msg->vel[1];
         gps2_velEcef.vector.z = msg->vel[2];
-        publishGPS();
+        publishGPS2();
     }
 }
 
-void InertialSenseROS::publishGPS()
+void InertialSenseROS::publishGPS1()
 {
-    double dt = (gps_velEcef.header.stamp - gps_msg.header.stamp).toSec();
+    double dt = (gps1_velEcef.header.stamp - gps1_msg.header.stamp).toSec();
     if (abs(dt) < 2.0e-3)
     {
-        gps_msg.velEcef = gps_velEcef.vector;
-        GPS_.pub.publish(gps_msg);
+        gps1_msg.velEcef = gps1_velEcef.vector;
+        GPS1_.pub.publish(gps1_msg);
+    }
+}
+
+void InertialSenseROS::publishGPS2()
+{
+    double dt = (gps2_velEcef.header.stamp - gps2_msg.header.stamp).toSec();
+    if (abs(dt) < 2.0e-3)
+    {
+        gps2_msg.velEcef = gps2_velEcef.vector;
+        GPS2_.pub.publish(gps2_msg);
     }
 }
 
@@ -1917,7 +1927,7 @@ void InertialSenseROS::diagnostics_callback(const ros::TimerEvent &event)
     diagnostic_msgs::DiagnosticStatus cno_mean;
     cno_mean.name = "CNO Mean";
     cno_mean.level = diagnostic_msgs::DiagnosticStatus::OK;
-    cno_mean.message = std::to_string(gps_msg.cno);
+    cno_mean.message = std::to_string(gps1_msg.cno);
     diag_array.status.push_back(cno_mean);
 
     if (RTK_pos_.enabled)

@@ -114,6 +114,7 @@ public:
         bool enabled = false;
         ros::Publisher pub;
         ros::Publisher pub2;
+        ros::Publisher pub3;
         int period_multiple = 1;
     } ros_stream_t;
 
@@ -136,7 +137,9 @@ public:
     ros::Publisher odom_ins_enu_pub_;
     ros::Publisher strobe_pub_;
     ros::Timer obs_bundle_timer_;
-    ros::Time last_obs_time_;
+    ros::Time last_obs_time_1_;
+    ros::Time last_obs_time_2_;
+    ros::Time last_obs_time_base_;
     ros::Timer data_stream_timer_;
     ros::Timer diagnostics_timer_;
     inertial_sense_ros::GNSSObsVec gps1_obs_Vec_;
@@ -215,17 +218,17 @@ public:
     ros_stream_t diagnostics_;
     ros_stream_t GPS1_;
     ros_stream_t GPS1_info_;
-    ros_stream_t GPS1_obs_;
-    ros_stream_t GPS1_eph_;
-    ros_stream_t GPS1_geph_;
+    ros_stream_t GPS1_raw_;
     ros_stream_t GPS2_;
     ros_stream_t GPS2_info_;
-    ros_stream_t GPS2_obs_;
-    ros_stream_t GPS2_eph_;
-    ros_stream_t GPS2_geph_;
-    ros_stream_t RTK_;
+    ros_stream_t GPS2_raw_;
+    ros_stream_t GPS_base_raw_;
+    ros_stream_t RTK_pos_;
+    ros_stream_t RTK_cmp_;
     ros_stream_t NavSatFix_;
     bool NavSatFixConfigured = false;
+    int gps_raw_period_multiple = 1;
+    int gps_info_period_multiple = 1;
 
     bool ins1Streaming_ = false;
     bool ins2Streaming_ = false;
@@ -239,12 +242,17 @@ public:
     bool strobeInStreaming_ = false;
     bool diagnosticsStreaming_ = false;
     // NOTE: that GPS streaming flags are applicable for all GPS devices/receivers
-    bool gpsInfoStreaming_ = false;
-    bool gpsPosStreaming_ = false;
-    bool gpsVelStreaming_ = false;
-    bool gpsRawStreaming_ = false;
-    bool rtkMiscStreaming_ = false;
+    bool gps1PosStreaming_ = false;
+    bool gps1VelStreaming_ = false;
+    bool gps2PosStreaming_ = false;
+    bool gps2VelStreaming_ = false;
+    bool gps1RawStreaming_ = false;
+    bool gps2RawStreaming_ = false;
+    bool gps1InfoStreaming_ = false;
+    bool gps2InfoStreaming_ = false;
+    bool rtkPosMiscStreaming_ = false;
     bool rtkPosRelStreaming_ = false;
+    bool rtkCmpMiscStreaming_ = false;
     bool rtkCmpRelStreaming_ = false;
     bool data_streams_enabled_ = false;
 

@@ -139,7 +139,9 @@ public:
     ros::Time last_obs_time_;
     ros::Timer data_stream_timer_;
     ros::Timer diagnostics_timer_;
-    inertial_sense_ros::GNSSObsVec obs_Vec_;
+    inertial_sense_ros::GNSSObsVec gps1_obs_Vec_;
+    inertial_sense_ros::GNSSObsVec gps2_obs_Vec_;
+    inertial_sense_ros::GNSSObsVec base_obs_Vec_;
 
     bool rtk_connecting_ = false;
     int RTK_connection_attempt_limit_ = 1;
@@ -160,10 +162,10 @@ public:
     bool RTK_base_USB_ = false;
     bool RTK_base_serial_ = false;
     bool RTK_base_TCP_ = false;
-    bool dual_GNSS_ = false;
+    bool GNSS_Compass_ = false;
 
     std::string gps1_type_ = "F9P";
-    std::string gps1_topic_ = "gps";
+    std::string gps1_topic_ = "gps1";
     std::string gps2_type_ = "F9P";
     std::string gps2_topic_ = "gps2";
 
@@ -183,7 +185,7 @@ public:
     void GPS_info_callback(eDataIDs DID, const gps_sat_t *const msg);
     void mag_callback(eDataIDs DID, const magnetometer_t *const msg);
     void baro_callback(eDataIDs DID, const barometer_t *const msg);
-    void preint_IMU_callback(eDataIDs DID, const preintegrated_imu_t *const msg);
+    void preint_IMU_callback(eDataIDs DID, const pimu_t *const msg);
     void strobe_in_time_callback(eDataIDs DID, const strobe_in_time_t *const msg);
     void diagnostics_callback(const ros::TimerEvent &event);
     void GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg);
@@ -242,7 +244,8 @@ public:
     bool gpsVelStreaming_ = false;
     bool gpsRawStreaming_ = false;
     bool rtkMiscStreaming_ = false;
-    bool rtkRelStreaming_ = false;
+    bool rtkPosRelStreaming_ = false;
+    bool rtkCmpRelStreaming_ = false;
     bool data_streams_enabled_ = false;
 
     // Services
@@ -356,9 +359,7 @@ public:
     nav_msgs::Odometry enu_odom_msg;
     sensor_msgs::NavSatFix NavSatFix_msg;
     inertial_sense_ros::GPS gps1_msg;
-    inertial_sense_ros::GPS gps2_msg;
     geometry_msgs::Vector3Stamped gps1_velEcef;
-    geometry_msgs::Vector3Stamped gps2_velEcef;
     inertial_sense_ros::GPSInfo gps_info_msg;
     inertial_sense_ros::GPS gps2_msg;
     geometry_msgs::Vector3Stamped gps2_velEcef;

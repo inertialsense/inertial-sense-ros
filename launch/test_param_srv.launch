@@ -52,7 +52,7 @@
                            RTK_base_USB: false,
                            RTK_base_serial: false,
                            RTK_base_TCP: false,
-                           dual_GNSS: false,
+                           GNSS_Compass: false,
                            inclination: 0,
                            declination: 0,
                            dynamic_model: 8,

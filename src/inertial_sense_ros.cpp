@@ -638,7 +638,7 @@ void InertialSenseROS::configure_flash_parameters()
         memcpy(current_flash_cfg.gps2AntOffset, gps2AntOffset_, sizeof(gps2AntOffset_));
         memcpy(current_flash_cfg.refLla, refLla_, sizeof(refLla_));
         current_flash_cfg.ioConfig = ioConfig_;
-        // current_flash_cfg.magInclination = magInclination_;
+        current_flash_cfg.gpsTimeUserDelay = gpsTimeUserDelay;
         current_flash_cfg.magDeclination = magDeclination_;
         current_flash_cfg.insDynModel = insDynModel_;
 

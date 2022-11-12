@@ -1706,7 +1706,6 @@ void InertialSenseROS::RTK_Misc_callback(eDataIDs DID, const gps_rtk_misc_t *con
         rtk_info.roverEph = msg->roverBeidouEphemerisCount + msg->roverGalileoEphemerisCount + msg->roverGlonassEphemerisCount + msg->roverGpsEphemerisCount;
         rtk_info.roverObs = msg->roverBeidouObservationCount + msg->roverGalileoObservationCount + msg->roverGlonassObservationCount + msg->roverGpsObservationCount;
         rtk_info.cycle_slip_count = msg->cycleSlipCount;
-        RTK_cmp_.pub.publish(rtk_info);
     }
     if (DID == DID_GPS1_RTK_POS_MISC)
     {

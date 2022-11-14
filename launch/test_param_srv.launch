@@ -2,7 +2,7 @@
 	<rosparam subst_value="True">
 
     inertial_sense_node: { port: "/dev/ttyACM0",
-                           navigation_dt_ms: 4,
+                           navigation_dt_ms: 16,
                            baudrate: 921600,
                            frame_id: "body",
                            stream_DID_INS_1: true,
@@ -52,7 +52,7 @@
                            RTK_base_USB: false,
                            RTK_base_serial: false,
                            RTK_base_TCP: false,
-                           dual_GNSS: false,
+                           GNSS_Compass: false,
                            inclination: 0,
                            declination: 0,
                            dynamic_model: 8,

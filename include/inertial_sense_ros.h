@@ -44,6 +44,9 @@
 #define GPS_UNIX_OFFSET 315964800 // GPS time started on 6/1/1980 while UNIX time started 1/1/1970 this is the difference between those in seconds
 #define LEAP_SECONDS 18           // GPS time does not have leap seconds, UNIX does (as of 1/1/2017 - next one is probably in 2020 sometime unless there is some crazy earthquake or nuclear blast)
 #define UNIX_TO_GPS_OFFSET (GPS_UNIX_OFFSET - LEAP_SECONDS)
+#define FIRMWARE_VERSION_CHAR0 1
+#define FIRMWARE_VERSION_CHAR1 9
+#define FIRMWARE_VERSION_CHAR2 0
 
 #define SET_CALLBACK(DID, __type, __cb_fun, __periodmultiple)                          \
     IS_.BroadcastBinaryData(DID, __periodmultiple,                                     \
@@ -77,6 +80,7 @@ public:
     template <typename Derived1>
     bool get_node_vector_yaml(YAML::Node node, const std::string key, int size, Derived1 &val);
     void connect();
+    bool firmware_compatiblity_check();
     void set_navigation_dt_ms();
     void configure_flash_parameters();
     void configure_rtk();
@@ -110,6 +114,8 @@ public:
         bool enabled = false;
         ros::Publisher pub;
         ros::Publisher pub2;
+        ros::Publisher pub3;
+        int period_multiple = 1;
     } ros_stream_t;
 
 
@@ -131,10 +137,14 @@ public:
     ros::Publisher odom_ins_enu_pub_;
     ros::Publisher strobe_pub_;
     ros::Timer obs_bundle_timer_;
-    ros::Time last_obs_time_;
+    ros::Time last_obs_time_1_;
+    ros::Time last_obs_time_2_;
+    ros::Time last_obs_time_base_;
     ros::Timer data_stream_timer_;
     ros::Timer diagnostics_timer_;
-    inertial_sense_ros::GNSSObsVec obs_Vec_;
+    inertial_sense_ros::GNSSObsVec gps1_obs_Vec_;
+    inertial_sense_ros::GNSSObsVec gps2_obs_Vec_;
+    inertial_sense_ros::GNSSObsVec base_obs_Vec_;
 
     bool rtk_connecting_ = false;
     int RTK_connection_attempt_limit_ = 1;
@@ -155,10 +165,10 @@ public:
     bool RTK_base_USB_ = false;
     bool RTK_base_serial_ = false;
     bool RTK_base_TCP_ = false;
-    bool dual_GNSS_ = false;
+    bool GNSS_Compass_ = false;
 
     std::string gps1_type_ = "F9P";
-    std::string gps1_topic_ = "gps";
+    std::string gps1_topic_ = "gps1";
     std::string gps2_type_ = "F9P";
     std::string gps2_topic_ = "gps2";
 
@@ -178,7 +188,7 @@ public:
     void GPS_info_callback(eDataIDs DID, const gps_sat_t *const msg);
     void mag_callback(eDataIDs DID, const magnetometer_t *const msg);
     void baro_callback(eDataIDs DID, const barometer_t *const msg);
-    void preint_IMU_callback(eDataIDs DID, const preintegrated_imu_t *const msg);
+    void preint_IMU_callback(eDataIDs DID, const pimu_t *const msg);
     void strobe_in_time_callback(eDataIDs DID, const strobe_in_time_t *const msg);
     void diagnostics_callback(const ros::TimerEvent &event);
     void GPS_pos_callback(eDataIDs DID, const gps_pos_t *const msg);
@@ -198,7 +208,6 @@ public:
     ros_stream_t DID_INS_2_;
     ros_stream_t DID_INS_4_;
     ros_stream_t INL2_states_;
-    ros_stream_t DID_ROS_COVARIANCE_POSE_TWIST_;
     ros_stream_t odom_ins_ned_;
     ros_stream_t odom_ins_ecef_;
     ros_stream_t odom_ins_enu_;
@@ -209,17 +218,17 @@ public:
     ros_stream_t diagnostics_;
     ros_stream_t GPS1_;
     ros_stream_t GPS1_info_;
-    ros_stream_t GPS1_obs_;
-    ros_stream_t GPS1_eph_;
-    ros_stream_t GPS1_geph_;
+    ros_stream_t GPS1_raw_;
     ros_stream_t GPS2_;
     ros_stream_t GPS2_info_;
-    ros_stream_t GPS2_obs_;
-    ros_stream_t GPS2_eph_;
-    ros_stream_t GPS2_geph_;
-    ros_stream_t RTK_;
+    ros_stream_t GPS2_raw_;
+    ros_stream_t GPS_base_raw_;
+    ros_stream_t RTK_pos_;
+    ros_stream_t RTK_cmp_;
     ros_stream_t NavSatFix_;
     bool NavSatFixConfigured = false;
+    int gps_raw_period_multiple = 1;
+    int gps_info_period_multiple = 1;
 
     bool ins1Streaming_ = false;
     bool ins2Streaming_ = false;
@@ -233,12 +242,18 @@ public:
     bool strobeInStreaming_ = false;
     bool diagnosticsStreaming_ = false;
     // NOTE: that GPS streaming flags are applicable for all GPS devices/receivers
-    bool gpsInfoStreaming_ = false;
-    bool gpsPosStreaming_ = false;
-    bool gpsVelStreaming_ = false;
-    bool gpsRawStreaming_ = false;
-    bool rtkMiscStreaming_ = false;
-    bool rtkRelStreaming_ = false;
+    bool gps1PosStreaming_ = false;
+    bool gps1VelStreaming_ = false;
+    bool gps2PosStreaming_ = false;
+    bool gps2VelStreaming_ = false;
+    bool gps1RawStreaming_ = false;
+    bool gps2RawStreaming_ = false;
+    bool gps1InfoStreaming_ = false;
+    bool gps2InfoStreaming_ = false;
+    bool rtkPosMiscStreaming_ = false;
+    bool rtkPosRelStreaming_ = false;
+    bool rtkCmpMiscStreaming_ = false;
+    bool rtkCmpRelStreaming_ = false;
     bool data_streams_enabled_ = false;
 
     // Services
@@ -351,8 +366,8 @@ public:
     nav_msgs::Odometry ecef_odom_msg;
     nav_msgs::Odometry enu_odom_msg;
     sensor_msgs::NavSatFix NavSatFix_msg;
-    inertial_sense_ros::GPS gps_msg;
-    geometry_msgs::Vector3Stamped gps_velEcef;
+    inertial_sense_ros::GPS gps1_msg;
+    geometry_msgs::Vector3Stamped gps1_velEcef;
     inertial_sense_ros::GPSInfo gps_info_msg;
     inertial_sense_ros::GPS gps2_msg;
     geometry_msgs::Vector3Stamped gps2_velEcef;

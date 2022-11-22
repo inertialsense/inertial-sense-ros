@@ -38,7 +38,7 @@ InertialSenseROS::InertialSenseROS(YAML::Node paramNode, bool configFlashParamet
     refLLA_set_value_srv_ = nh_.advertiseService("set_refLLA_value", &InertialSenseROS::set_refLLA_to_value, this);
     mag_cal_srv_ = nh_.advertiseService("single_axis_mag_cal", &InertialSenseROS::perform_mag_cal_srv_callback, this);
     multi_mag_cal_srv_ = nh_.advertiseService("multi_axis_mag_cal", &InertialSenseROS::perform_multi_mag_cal_srv_callback, this);
-    firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
+    //firmware_update_srv_ = nh_.advertiseService("firmware_update", &InertialSenseROS::update_firmware_srv_callback, this);
     data_stream_timer_          = nh_.createTimer(ros::Duration(1), configure_data_streams, this); // 2 Hz
     if (diagnostics_.enabled)
     {

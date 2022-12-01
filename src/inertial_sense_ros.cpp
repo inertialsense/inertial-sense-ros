@@ -95,7 +95,7 @@ void InertialSenseROS::load_params_yaml(YAML::Node node)
     get_node_param_yaml(node, "stream_GPS2", GPS2_.enabled);
     get_node_param_yaml(node, "gps2_period_multiple", GPS2_.period_multiple);
     get_node_param_yaml(node, "stream_GPS_raw", GPS1_raw_.enabled);
-    get_node_param_yaml(node, "stream_GPS_raw", GPS1_raw_.enabled);
+    get_node_param_yaml(node, "stream_GPS_raw", GPS2_raw_.enabled);
     get_node_param_yaml(node, "gps_raw_period_multiple", gps_raw_period_multiple);
     get_node_param_yaml(node, "stream_GPS_info", GPS1_info_.enabled);
     get_node_param_yaml(node, "stream_GPS_info", GPS2_info_.enabled);
@@ -181,8 +181,8 @@ void InertialSenseROS::load_params_srv()
     nh_private_.getParam("stream_GPS_raw", GPS1_raw_.enabled);
     nh_private_.getParam("stream_GPS_raw", GPS2_raw_.enabled);
     nh_private_.getParam("gps_raw_period_multiple", gps_raw_period_multiple);
-    nh_private_.getParam("stream_GPS1_info", GPS1_info_.enabled);
-    nh_private_.getParam("stream_GPS2_info", GPS2_info_.enabled);
+    nh_private_.getParam("stream_GPS_info", GPS1_info_.enabled);
+    nh_private_.getParam("stream_GPS_info", GPS2_info_.enabled);
     nh_private_.getParam("gps_info_period_multiple", gps_info_period_multiple);
     nh_private_.getParam("GPS1_topic", gps1_topic_);
     nh_private_.getParam("GPS2_topic", gps2_topic_);

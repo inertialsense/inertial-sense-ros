@@ -137,7 +137,7 @@ void InertialSenseROS::load_params_yaml(YAML::Node node)
     get_node_param_yaml(node, "RTK_base_TCP", RTK_base_TCP_);
     get_node_param_yaml(node, "GNSS_Compass", GNSS_Compass_);
     get_node_param_yaml(node, "RTK_cmp_period_multiple", RTK_cmp_.period_multiple);
-    get_node_param_yaml(node, "inclination", magInclination_);
+    get_node_param_yaml(node, "gpsTimeUserDelay", gpsTimeUserDelay_);
     get_node_param_yaml(node, "declination", magDeclination_);
     get_node_param_yaml(node, "dynamic_model", insDynModel_);
 
@@ -221,7 +221,7 @@ void InertialSenseROS::load_params_srv()
     nh_private_.getParam("RTK_base_TCP", RTK_base_TCP_);
     nh_private_.getParam("GNSS_Compass", GNSS_Compass_);
     nh_private_.getParam("RTK_cmp_period_multiple", RTK_cmp_.period_multiple);
-    nh_private_.getParam("inclination", magInclination_);
+    nh_private_.getParam("gpsTimeUserDelay", gpsTimeUserDelay_);
     nh_private_.getParam("declination", magDeclination_);
     nh_private_.getParam("dynamic_model", insDynModel_);
 
@@ -638,7 +638,7 @@ void InertialSenseROS::configure_flash_parameters()
         memcpy(current_flash_cfg.gps2AntOffset, gps2AntOffset_, sizeof(gps2AntOffset_));
         memcpy(current_flash_cfg.refLla, refLla_, sizeof(refLla_));
         current_flash_cfg.ioConfig = ioConfig_;
-        current_flash_cfg.gpsTimeUserDelay = gpsTimeUserDelay;
+        current_flash_cfg.gpsTimeUserDelay = gpsTimeUserDelay_;
         current_flash_cfg.magDeclination = magDeclination_;
         current_flash_cfg.insDynModel = insDynModel_;
 

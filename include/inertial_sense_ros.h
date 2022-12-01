@@ -399,4 +399,6 @@ public:
     int insDynModel_ = INS_DYN_MODEL_AIRBORNE_4G;
     bool refLLA_known = false;
     int ioConfig_ = 39624800; //F9P RUG2 RTK CMP: 0x025ca060
+    float gpsTimeUserDelay_ = 0;
+
 };

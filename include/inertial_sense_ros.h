@@ -368,6 +368,8 @@ public:
     sensor_msgs::NavSatFix NavSatFix_msg;
     inertial_sense_ros::GPS gps1_msg;
     geometry_msgs::Vector3Stamped gps1_velEcef;
+    float gps1_sAcc;
+    float gps2_sAcc;
     inertial_sense_ros::GPSInfo gps_info_msg;
     inertial_sense_ros::GPS gps2_msg;
     geometry_msgs::Vector3Stamped gps2_velEcef;

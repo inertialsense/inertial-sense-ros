@@ -1508,6 +1508,7 @@ void InertialSenseROS::GPS_vel_callback(eDataIDs DID, const gps_vel_t *const msg
         gps1_velEcef.vector.x = msg->vel[0];
         gps1_velEcef.vector.y = msg->vel[1];
         gps1_velEcef.vector.z = msg->vel[2];
+        gps1_sAcc = msg->sAcc;
         publishGPS1();
     }
     if (GPS2_.enabled && (DID == DID_GPS2_VEL) && abs(GPS_towOffset_) > 0.001)
@@ -1516,6 +1517,7 @@ void InertialSenseROS::GPS_vel_callback(eDataIDs DID, const gps_vel_t *const msg
         gps2_velEcef.vector.x = msg->vel[0];
         gps2_velEcef.vector.y = msg->vel[1];
         gps2_velEcef.vector.z = msg->vel[2];
+        gps2_sAcc = msg->sAcc;
         publishGPS2();
     }
 }
@@ -1526,6 +1528,7 @@ void InertialSenseROS::publishGPS1()
     if (abs(dt) < 2.0e-3)
     {
         gps1_msg.velEcef = gps1_velEcef.vector;
+        gps1_msg.sAcc = gps1_sAcc;
         GPS1_.pub.publish(gps1_msg);
     }
 }
@@ -1536,6 +1539,7 @@ void InertialSenseROS::publishGPS2()
     if (abs(dt) < 2.0e-3)
     {
         gps2_msg.velEcef = gps2_velEcef.vector;
+        gps2_msg.sAcc = gps2_sAcc;
         GPS2_.pub.publish(gps2_msg);
     }
 }

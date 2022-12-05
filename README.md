@@ -258,8 +258,8 @@ __*Note: These values must be clear for TCP configuration to work__
     - The NED translation vector between the INS frame and the GPS 2 antenna (wrt INS frame)
 * `~GPS_ref_lla` (vector(3), default: {0, 0, 0})
     - The Reference longitude, latitude and altitude for NED calculation in degrees, degrees and meters (use the `set_refLLA` service to update this automatically)
-* `~gpsTimeUserDelay` (float, default: 0)
-    - GPS update time delay
+* `~inclination` (float, default: 1.14878541071)
+    - The inclination of earth's magnetic field (radians)
 * `~declination` (float, default: 0.20007290992)
     - The declination of earth's magnetic field (radians)
 * `~dynamic_model` (int, default: 8)

@@ -368,8 +368,6 @@ public:
     sensor_msgs::NavSatFix NavSatFix_msg;
     inertial_sense_ros::GPS gps1_msg;
     geometry_msgs::Vector3Stamped gps1_velEcef;
-    float gps1_sAcc;
-    float gps2_sAcc;
     inertial_sense_ros::GPSInfo gps_info_msg;
     inertial_sense_ros::GPS gps2_msg;
     geometry_msgs::Vector3Stamped gps2_velEcef;
@@ -401,6 +399,4 @@ public:
     int insDynModel_ = INS_DYN_MODEL_AIRBORNE_4G;
     bool refLLA_known = false;
     int ioConfig_ = 39624800; //F9P RUG2 RTK CMP: 0x025ca060
-    float gpsTimeUserDelay_ = 0;
-
 };

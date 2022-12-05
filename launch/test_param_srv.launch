@@ -46,7 +46,7 @@
                             RTK_server_port: 7777,
                             <!-- # Every time we attempt to connect only try one time -->
                             <!-- RTK_connection_attempt_limit: 1, -->
-                           GPS1_type: "F9P",
+                           GPS_type: "F9P",
                            RTK_rover: true,
                            RTK_rover_radio_enable: false,
                            RTK_base_USB: false,

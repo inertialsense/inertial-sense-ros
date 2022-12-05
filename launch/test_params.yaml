@@ -41,7 +41,7 @@ inertial_sense_ros:
   # # TCP - Inertial Sense
   # RTK_server_IP: "127.0.0.1"
   # RTK_server_port: 7777
-  GPS1_type: "F9P"
+  GPS_type: "F9P"
   RTK_rover: true
   RTK_rover_radio_enable: false
   RTK_base_USB: false

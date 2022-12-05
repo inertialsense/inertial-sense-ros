@@ -1,14 +1,15 @@
 # Inertial Sense ROS
 
 
-A ROS wrapper for the InertialSense uINS3 RTK-GPS-INS and Dual GPS (GPS Compassing) sensor.
+A ROS wrapper for the Inertial Sense IMX product line.
 
 ## NOTICE:
 
-To use this node, the uINS should be updated with the latest firmware found on the Inertial Sense [release page](https://github.com/inertialsense/inertial-sense-sdk/releases). Download the appropriate `.hex` file and use the `firmware_update` ROS service to update the firmware
-``` 
-rosservice call /firmware_update ~/Download/IS_uINS-3_<...>.hex
-```
+To use this node, the unit should be updated with the latest firmware found on the Inertial Sense [release page](https://github.com/inertialsense/inertial-sense-sdk/releases). Download the appropriate `.hex` file and use the Inertial Sense EvalTool, CLTool, or SDK to upload the firmware.
+
+<!---``` 
+#rosservice call /firmware_update ~/Download/IS_uINS-3_<...>.hex
+```-->
 
 ## Installation
 This ROS package, uses the inertial-sense-sdk as a submodule. Clone this package into the catkin workspace `src` folder, then pull the submodule.
@@ -30,7 +31,7 @@ catkin_make
 rosrun inertial_sense inertial_sense_node
 ```
 
-The user must be a member of the `dailout` group, or the user won't have access to the serial port.
+The user must be a member of the `dialout` group, or the user won't have access to the serial port.
 
 For instructions on changing parameter values and topic remapping from the command line while using `rosrun` refer to the [Remapping Arguments](http://wiki.ros.org/Remapping%20Arguments) page. To set vector parameters, use the following syntax:
 
@@ -39,13 +40,13 @@ rosparam set /inertial_sense_node/GPS_ref_lla "[40.25, -111.67, 1556.59]"
 rosrun inertial_sense inertial_sense_node
 ```
 
-To set parameters and topic remappings from a launch file, refer to the [Roslaunch for Larger Projects](http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20tips%20for%20larger%20projects) page, or the sample `launch/test.launch` file in this repository.
+To set parameters and topic remappings from a launch file, refer to the [Roslaunch for Larger Projects](http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20tips%20for%20larger%20projects) page, or use one of the the sample launch files in this repository:  `launch/test_param_srv.launch` or  `launch/test_YAML_params.launch`
 
 
 
 ## Time Stamps
 
-If GPS is available, all header timestamps are calculated with respect to the GPS clock but are translated into UNIX time to be consistent with the other topics in a ROS network.  If GPS is unvailable, then a constant offset between uINS time and system time is estimated during operation  and is applied to IMU and INS message timestamps as they arrive.  There is often a small drift in these timestamps (on the order of a microsecond per second), due to variance in measurement streams and difference between uINS and system clocks, however this is more accurate than stamping the measurements with ROS time as they arrive.  
+If GPS is available, all header timestamps are calculated with respect to the GPS clock but are translated into UNIX time to be consistent with the other topics in a ROS network.  If GPS is unvailable, then a constant offset between IMX time and system time is estimated during operation and is applied to IMU and INS message timestamps as they arrive.  There is often a small drift in these timestamps (on the order of a microsecond per second) due to variance in measurement streams and the difference between IMX and system clocks, however this is more accurate than stamping the measurements with ROS time as they arrive.  
 
 In an ideal setting, there should be no jump in timestamps when GPS is first acquired, because the timestamps should be identical, however, due to inaccuracies in system time, there will likely be a small jump in message timestamps after the first GPS fix.
 
@@ -90,12 +91,12 @@ Topics are enabled and disabled using parameters.  By default, only the `ins` to
     - Timestamp of strobe in message header
 
 
-__*Note: RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data. Raw data can only be streamed from the onboard m8 receiver. To enable the onboard receiver change `GPS_type` to m8.__
-- `gps/obs` (inertial_sense_ros/GNSSObservation)
+__*Note: RTK positioning or RTK compassing mode must be enabled to stream any raw GPS data. Raw data can only be streamed from the onboard m8 receiver. To enable the onboard receiver change `GPS1_type` to m8.__
+- `<gps1_topic>/obs` (inertial_sense_ros/GNSSObservation)
     * Raw satellite observation (psuedorange and carrier phase)
-- `gps/eph` (inertial_sense_ros/GNSSEphemeris)
+- `<gps1_topic>/eph` (inertial_sense_ros/GNSSEphemeris)
     * Satellite Ephemeris for GPS and Galileo GNSS constellations
-- `gps/geph`
+- `<gps1_topic>/geph`
     * Satellite Ephemeris for Glonass GNSS constellation
 
 ## Parameters
@@ -110,49 +111,89 @@ __*Note: RTK positioning or RTK compassing mode must be enabled to stream any ra
   - enable Inertial Sense Logger - logs PPD log in .dat format
 * `~navigation_dt_ms` (int, default: Value retrieved from device flash configuration)
    - milliseconds between internal navigation filter updates (min=2ms/500Hz).  This is also determines the rate at which the topics are published.
-* `ioConfig` (int, default 39624800)
+* `~ioConfig` (int, default 39624800)
    - ioConfig bits in decimal format. Used for selection of GPS receiver type. See eIoConfig in data_sets.h
 
 **Topic Configuration**
 
 * `~stream_DID_INS_1` (bool, default: false)
    - Flag to stream DID_INS_1 message
+* `~ins1_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_DID_INS_2` (bool, default: false)
    - Flag to stream DID_INS_2 message
+* `~ins2_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_DID_INS_4` (bool, default: false)
    - Flag to stream DID_INS_4 message
+* `~ins4_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_odom_ins_ned` (bool, default: true)
    - Flag to stream navigation solution in NED
+* `~odom_ins_ned_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_odom_ins_enu` (bool, default: false)
    - Flag to stream navigation solution in ENU
+* `~odom_ins_enu_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_odom_ins_ecef` (bool, default: false)
    - Flag to stream navigation solution in ECEF
+* `~odom_ins_ecef_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_covariance_data` (bool, default: false)
    - Flag to stream navigation covariance data in odometry messages
 
      __*Note__ - Data set is 176 bytes. Care should be taken to ensure sufficient bandwidth
 * `~stream_INL2_states` (bool, default: false)    
     - Flag to stream INS2 state data
+* `~INL2_states_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_IMU` (bool, default: false)
    - Flag to stream IMU measurements or not
+* `~imu_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_baro` (bool, default: false)
    - Flag to stream baro or not
+* `~baro_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_mag` (bool, default: false)
    - Flag to stream magnetometer or not
+* `~mag_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_preint_IMU` (bool, default: false)
    - Flag to stream preintegrated IMU or not
-* `~stream_GPS`(bool, default: false)
+* `~preint_imu_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
+* `~stream_GPS1`(bool, default: false)
    - Flag to stream GPS
+* `~gps1_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
+* `~stream_GPS2`(bool, default: false)
+   - Flag to stream GPS
+* `~gps2_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 * `~stream_GPS_info`(bool, default: false)
    - Flag to stream GPS info messages
+* `~gps_info_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 - `~stream_GPS_raw` (bool, default: false)
    - Flag to stream GPS raw messages
-- `stream_NavSatFix` (bool, default: false)
-    -Flag to stream NavSatFix message
+* `~gps_raw_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
+- `~stream_NavSatFix` (bool, default: false)
+   - Flag to stream NavSatFix message
+* `~NavSatFix_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 - `~publishTf`(bool, default: true)
    - Flag to publish Tf transformations 'ins' to 'body_link'
 * `~stream_diagnostics` (bool, default: true)
-    -Flag to stream diagnostics data
+   - Flag to stream diagnostics data
+* `~diagnostics_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
+* `~RTK_pos_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
+* `~RTK_cmp_period_multiple` (int, default: 1)
+   - Configures period multiple of data set stream rate
 
 ## RTK Configuration
 
@@ -164,7 +205,7 @@ __*Note: RTK positioning or RTK compassing mode must be enabled to stream any ra
    - Makes the connected uINS a RTK base station and enables the publishing of corrections out the USB port
 * `~RTK_base_TCP` (bool, default: false)
    - Makes the connected uINS a RTK base station and creates a TCP server with which to publish corrections
-* `~dual_GNSS` (bool, default: false)
+* `~GNSS_Compass` (bool, default: false)
    - Uses both GPS antennas in a dual-GNSS configuration
 * `~RTK_rover_radio_enable` (bool, default: false)
    - Enable radio on EVB2 for base corrections
@@ -203,16 +244,22 @@ __*Note: These values must be clear for TCP configuration to work__
     - The roll, pitch, yaw rotation from the INS frame to the output frame
 * `~INS_xyz` (vector(3), default: {0, 0, 0})
     - The NED translation vector between the INS frame and the output frame (wrt output frame)
-* `~gps_type` (string, default: "F9P")
+* `~GPS1_type` (string, default: "F9P")
     - Which receiver type: "F9P" or "M8"
+* `~GPS1_topic` (string, default: "gps1")
+    - ROS topic name of GPS1 stream
+* `GPS2_type` (string, default: "F9P")
+    - Which receiver type: "F9P" or "M8"
+* `~GPS2_topic` (string, default: "gps2")
+    - ROS topic name of GPS1 stream
 * `~GPS_ant1_xyz` (vector(3), default: {0, 0, 0})
     - The NED translation vector between the INS frame and the GPS 1 antenna (wrt INS frame)
 * `~GPS_ant2_xyz` (vector(3), default: {0, 0, 0})
     - The NED translation vector between the INS frame and the GPS 2 antenna (wrt INS frame)
 * `~GPS_ref_lla` (vector(3), default: {0, 0, 0})
     - The Reference longitude, latitude and altitude for NED calculation in degrees, degrees and meters (use the `set_refLLA` service to update this automatically)
-* `~inclination` (float, default: 1.14878541071)
-    - The inclination of earth's magnetic field (radians)
+* `~gpsTimeUserDelay` (float, default: 0)
+    - GPS update time delay
 * `~declination` (float, default: 0.20007290992)
     - The declination of earth's magnetic field (radians)
 * `~dynamic_model` (int, default: 8)

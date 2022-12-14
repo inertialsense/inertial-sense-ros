@@ -1522,7 +1522,7 @@ void InertialSenseROS::GPS_vel_callback(eDataIDs DID, const gps_vel_t *const msg
 
 void InertialSenseROS::publishGPS1()
 {
-    double dt = (gps2_velEcef.header.stamp - gps2_msg.header.stamp).toSec();
+    double dt = (gps1_velEcef.header.stamp - gps1_msg.header.stamp).toSec();
     if (abs(dt) < 2.0e-3)
     {
         gps1_msg.velEcef = gps1_velEcef.vector;

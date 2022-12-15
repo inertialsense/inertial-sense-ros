@@ -28,10 +28,8 @@
         
         <!-- F9P EVB2 RTK CMP ioConfig: 0x025ca000-->
         ioConfig: 39624800,
-
         <!-- F9P RTK CMP ioConfig: 0x025ca040 -->
         <!-- ioConfig: 39624768, -->  
-
         <!-- F9P RUG3 RTK CMP ioConfig: 0x025dc040-->
         <!-- ioConfig: 39698496,   -->
 

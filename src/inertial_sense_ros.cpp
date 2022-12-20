@@ -776,8 +776,8 @@ void InertialSenseROS::configure_rtk()
 
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, RTK_pos_.period_multiple);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, RTK_pos_.period_multiple);
-            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
-            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
 
             start_rtk_connectivity_watchdog_timer();
         }
@@ -787,8 +787,8 @@ void InertialSenseROS::configure_rtk()
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_COMPASSING_F9P;
             SET_CALLBACK(DID_GPS2_RTK_CMP_MISC, gps_rtk_misc_t, RTK_Misc_callback, RTK_cmp_.period_multiple);
             SET_CALLBACK(DID_GPS2_RTK_CMP_REL, gps_rtk_rel_t, RTK_Rel_callback, RTK_cmp_.period_multiple);
-            RTK_cmp_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_cmp/info", 10);
-            RTK_cmp_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_cmp/rel", 10);
+            RTK_cmp_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
+            RTK_cmp_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
             ROS_INFO("InertialSense: Dual GNSS (compassing) configured");
         }
         if (RTK_rover_radio_enable_)
@@ -801,8 +801,8 @@ void InertialSenseROS::configure_rtk()
             RTKCfgBits |= RTK_CFG_BITS_ROVER_MODE_RTK_POSITIONING_EXTERNAL;
             SET_CALLBACK(DID_GPS1_RTK_POS_MISC, gps_rtk_misc_t, RTK_Misc_callback, RTK_pos_.period_multiple);
             SET_CALLBACK(DID_GPS1_RTK_POS_REL, gps_rtk_rel_t, RTK_Rel_callback, RTK_pos_.period_multiple);
-            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK_pos/info", 10);
-            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK_pos/rel", 10);
+            RTK_pos_.pub = nh_.advertise<inertial_sense_ros::RTKInfo>("RTK/info", 10);
+            RTK_pos_.pub2 = nh_.advertise<inertial_sense_ros::RTKRel>("RTK/rel", 10);
         }
         if (RTK_base_USB_)
         {

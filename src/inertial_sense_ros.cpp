@@ -1079,7 +1079,7 @@ void InertialSenseROS::INS4_callback(eDataIDs DID, const ins_4_t *const msg)
 
             ecef_odom_msg.pose.pose.position.x = msg->ecef[0];
             ecef_odom_msg.pose.pose.position.y = msg->ecef[1];
-            ecef_odom_msg.pose.pose.position.z = -msg->ecef[2];
+            ecef_odom_msg.pose.pose.position.z = msg->ecef[2];
 
             // Attitude
 

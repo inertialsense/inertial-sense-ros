@@ -147,13 +147,19 @@ public:
     inertial_sense_ros::GNSSObsVec base_obs_Vec_;
 
     bool rtk_connecting_ = false;
-    int RTK_connection_attempt_limit_ = 1;
-    int RTK_connection_attempt_backoff_ = 2;
-    int rtk_traffic_total_byte_count_ = 0;
-    int rtk_data_transmission_interruption_count_ = 0;
+    bool rtk_connected_ = false;
+    int rtk_traffic_total_byte_count_ = 0; // number of bytes communicated between the RTK client and the server
+    int RTK_connection_attempt_count_ = 0; // number of attempts made
+
+    int RTK_connection_attempt_limit_ = 1; // attempts before we give up... (for how long?)
+    int RTK_connection_attempt_backoff_ = 2; // how long before we retry after a failure (multiplied by the attempt #)
+
     bool rtk_connectivity_watchdog_enabled_ = true;
-    float rtk_connectivity_watchdog_timer_frequency_ = 1;
-    int rtk_data_transmission_interruption_limit_ = 5;
+    float rtk_connectivity_watchdog_timer_frequency_ = 1; // how often the watchdog checks for suspicious activity
+    int rtk_data_transmission_interruption_count_ = 0; // the number of "interruptions" (how many times the watching dog has barked)
+    int rtk_data_transmission_interruption_limit_ = 5; // the number of "barks" before we do something about it.
+    double rtk_traffic_time = 0.;           // ROS timestamp (seconds) of traffic event (from watchdog, ie when rtk_traffic_total_byte_count last changed)
+
     std::string RTK_server_mount_ = "";
     std::string RTK_server_username_ = "";
     std::string RTK_server_password_ = "";

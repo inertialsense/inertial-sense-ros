@@ -1,7 +1,10 @@
 # Inertial Sense ROS
 
-
 A ROS wrapper for the Inertial Sense IMX product line.
+
+## NOTICE:
+
+**This repository has been ARCHIVED is should not be used.  The InertialSense ROS node has been moved into the InertialSense SDK found at [inertial-sense-sdk/Inertial Sense ROS](https://github.com/inertialsense/inertial-sense-sdk/tree/main/ros).**
 
 ## NOTICE:
 
